@@ -1,7 +1,7 @@
 {
-  "name": "hapi-sequelize-crud",
+  "name": "hapi-sequelize-crud2",
   "version": "1.5.2",
-  "description": "Hapi plugin that automatically generates RESTful API for CRUD",
+  "description": "Hapi plugin that automatically generates RESTful API for CRUD, with pluralized routes",
   "main": "build/index.js",
   "config": {
     "ghooks": {
@@ -12,12 +12,15 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
-    "git": "https://github.com/mdibaiee/hapi-sequelize-crud"
+    "git": "https://github.com/alexanderreiff/hapi-sequelize-crud"
   },
   "files": [
     "build"
   ],
   "author": "Mahdi Dibaiee <mdibaiee@aol.com> (http://dibaiee.ir/)",
+  "contributors": [
+	"Alexander Reiff <alexander.reiff@me.com>"  
+  ],
   "license": "MIT",
   "devDependencies": {
     "babel": "5.8.3",
