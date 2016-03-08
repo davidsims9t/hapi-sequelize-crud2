@@ -48,7 +48,7 @@ export const list = (server, model) => {
 export const get = (server, model) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${model._singular}/{id?}`,
+    path: `${prefix}/${model._plural}/{id?}`,
 
     @error
     async handler(request, reply) {
@@ -118,7 +118,7 @@ export const scope = (server, model) => {
 export const create = (server, model) => {
   server.route({
     method: 'POST',
-    path: `${prefix}/${model._singular}`,
+    path: `${prefix}/${model._plural}`,
 
     @error
     async handler(request, reply) {
@@ -132,7 +132,7 @@ export const create = (server, model) => {
 export const destroy = (server, model) => {
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${model._singular}/{id?}`,
+    path: `${prefix}/${model._plural}/{id?}`,
 
     @error
     async handler(request, reply) {
@@ -196,7 +196,7 @@ export const destroyScope = (server, model) => {
 export const update = (server, model) => {
   server.route({
     method: 'PUT',
-    path: `${prefix}/${model._singular}/{id}`,
+    path: `${prefix}/${model._plural}/{id}`,
 
     @error
     async handler(request, reply) {

@@ -19,7 +19,7 @@ export default (server, a, b, options) => {
 export const get = (server, a, b) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._singular}/{aid}/${b._singular}/{bid}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._singular}/{bid}`,
 
     @error
     async handler(request, reply) {
@@ -48,7 +48,7 @@ export const get = (server, a, b) => {
 export const list = (server, a, b) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._singular}/{aid}/${b._plural}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._plural}`,
 
     @error
     async handler(request, reply) {
@@ -87,7 +87,7 @@ export const scope = (server, a, b) => {
 
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._singular}/{aid}/${b._plural}/{scope}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._plural}/{scope}`,
 
     @error
     async handler(request, reply) {
@@ -179,7 +179,7 @@ export const scopeScope = (server, a, b) => {
 export const destroy = (server, a, b) => {
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${a._singular}/{aid}/${b._plural}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._plural}`,
 
     @error
     async handler(request, reply) {
@@ -215,7 +215,7 @@ export const destroyScope = (server, a, b) => {
 
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${a._singular}/{aid}/${b._plural}/{scope}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._plural}/{scope}`,
 
     @error
     async handler(request, reply) {
@@ -259,7 +259,7 @@ export const destroyScope = (server, a, b) => {
 export const update = (server, a, b) => {
   server.route({
     method: 'PUT',
-    path: `${prefix}/${a._singular}/{aid}/${b._plural}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._plural}`,
 
     @error
     async handler(request, reply) {

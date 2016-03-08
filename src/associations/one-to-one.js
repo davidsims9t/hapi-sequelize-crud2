@@ -16,7 +16,7 @@ export default (server, a, b, options) => {
 export const get = (server, a, b) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._singular}/{aid}/${b._singular}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._singular}`,
 
     @error
     async handler(request, reply) {
@@ -45,7 +45,7 @@ export const get = (server, a, b) => {
 export const create = (server, a, b) => {
   server.route({
     method: 'POST',
-    path: `${prefix}/${a._singular}/{id}/${b._singular}`,
+    path: `${prefix}/${a._plural}/{id}/${b._singular}`,
 
     @error
     async handler(request, reply) {
@@ -60,7 +60,7 @@ export const create = (server, a, b) => {
 export const destroy = (server, a, b) => {
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${a._singular}/{aid}/${b._singular}/{bid}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._singular}/{bid}`,
 
     @error
     async handler(request, reply) {
@@ -87,7 +87,7 @@ export const destroy = (server, a, b) => {
 export const update = (server, a, b) => {
   server.route({
     method: 'PUT',
-    path: `${prefix}/${a._singular}/{aid}/${b._singular}/{bid}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._singular}/{bid}`,
 
     @error
     async handler(request, reply) {
