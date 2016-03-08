@@ -1,12 +1,15 @@
 import crud, { associations } from './crud';
 import url from 'url';
 import qs from 'qs';
+import snakeCase from 'snake-case';
 
 const register = (server, options = {}, next) => {
   options.prefix = options.prefix || '';
-
-	let db = server.plugins['hapi-sequelize'].db;
-	let models = db.sequelize.models;
+  options.scopePrefix = options.scopePrefix || 's';
+  options.snakeCase = options.snakeCase || false;
+  
+  let db = server.plugins['hapi-sequelize'].db;
+  let models = db.sequelize.models;
 
   const onRequest = function (request, reply) {
     const uri = request.raw.req.url;
@@ -16,6 +19,8 @@ const register = (server, options = {}, next) => {
 
     return reply.continue();
   };
+  
+  const convertCase = options.snakeCase ? snakeCase : function (str) { return str; };
 
   server.ext({
     type: 'onRequest',
@@ -25,8 +30,8 @@ const register = (server, options = {}, next) => {
   for (let modelName of Object.keys(models)) {
     let model = models[modelName];
     let { plural, singular } = model.options.name;
-    model._plural = plural.toLowerCase();
-    model._singular = singular.toLowerCase();
+    model._plural = convertCase(plural);
+    model._singular = convertCase(singular);
 
     // Join tables
     if (model.options.name.singular !== model.name) continue;
@@ -40,8 +45,8 @@ const register = (server, options = {}, next) => {
       let sourceName = source.options.name;
       let targetName = target.options.name;
 
-      target._plural = targetName.plural.toLowerCase();
-      target._singular = targetName.singular.toLowerCase();
+      target._plural = convertCase(targetName.plural);
+      target._singular = convertCase(targetName.singular);
 
       let targetAssociations = target.associations[sourceName.plural] || target.associations[sourceName.singular];
       let sourceType = association.associationType,

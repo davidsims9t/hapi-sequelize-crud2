@@ -2,10 +2,11 @@ import joi from 'joi';
 import error from '../error';
 import _ from 'lodash';
 
-let prefix;
+let prefix, scopePrefix;
 
 export default (server, a, b, options) => {
   prefix = options.prefix;
+  scopePrefix = options.scopePrefix;  
 
   get(server, a, b);
   list(server, a, b);
@@ -19,7 +20,7 @@ export default (server, a, b, options) => {
 export const get = (server, a, b) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._plural}/{aid}/${b._singular}/{bid}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._plural}/{bid}`,
 
     @error
     async handler(request, reply) {
@@ -137,7 +138,7 @@ export const scopeScope = (server, a, b) => {
 
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._plural}/{scopea}/${b._plural}/{scopeb}`,
+    path: `${prefix}/${a._plural}/${scopePrefix}/{scopea}/${b._plural}/${scopePrefix}/{scopeb}`,
 
     @error
     async handler(request, reply) {
@@ -215,7 +216,7 @@ export const destroyScope = (server, a, b) => {
 
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${a._plural}/{aid}/${b._plural}/{scope}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._plural}/${scopePrefix}/{scope}`,
 
     @error
     async handler(request, reply) {

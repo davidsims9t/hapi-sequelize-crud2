@@ -2,10 +2,11 @@ import joi from 'joi';
 import error from './error';
 import _ from 'lodash';
 
-let prefix;
+let prefix, scopePrefix;
 
 export default (server, model, options) => {
   prefix = options.prefix;
+  scopePrefix = options.scopePrefix;
 
 //   list(server, model);
   get(server, model);
@@ -86,7 +87,7 @@ export const scope = (server, model) => {
 
   server.route({
     method: 'GET',
-    path: `${prefix}/${model._plural}/{scope}`,
+    path: `${prefix}/${model._plural}/${scopePrefix}/{scope}`,
 
     @error
     async handler(request, reply) {
@@ -162,7 +163,7 @@ export const destroyScope = (server, model) => {
 
   server.route({
     method: 'DELETE',
-    path: `${prefix}/${model._plural}/{scope}`,
+    path: `${prefix}/${model._plural}/${scopePrefix}/{scope}`,
 
     @error
     async handler(request, reply) {
