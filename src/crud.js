@@ -7,7 +7,7 @@ let prefix;
 export default (server, model, options) => {
   prefix = options.prefix;
 
-  list(server, model);
+//   list(server, model);
   get(server, model);
   scope(server, model);
   create(server, model);
@@ -16,6 +16,7 @@ export default (server, model, options) => {
   update(server, model);
 }
 
+/*
 export const list = (server, model) => {
   server.route({
     method: 'GET',
@@ -44,6 +45,7 @@ export const list = (server, model) => {
     }
   });
 }
+*/
 
 export const get = (server, model) => {
   server.route({
@@ -65,7 +67,7 @@ export const get = (server, model) => {
         }
       }
 
-      let instance = await model.findOne({ where, include });
+      let instance = await model[request.params.id ? 'findOne' : 'findAll']({ where, include });
 
       reply(instance);
     },
