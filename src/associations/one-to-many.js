@@ -1,6 +1,7 @@
-import joi from 'joi';
 import error from '../error';
 import _ from 'lodash';
+import boom from 'boom';
+import joi from 'joi';
 
 let prefix, scopePrefix;
 
@@ -28,6 +29,11 @@ export const index = (server, model, association) => {
         include = [request.models[request.query.include]];
 
       const instance = await model.findById(request.params.aid);
+
+      if (!instance) {
+        return reply(boom.notFound());
+      }
+
       const where = _.omit(request.query, 'include');
       const result = await instance[association.accessors.get]({
         where,
@@ -35,6 +41,13 @@ export const index = (server, model, association) => {
       });
 
       reply(result);
+    },
+    config: {
+      validate: {
+        params: {
+          aid: joi.number().integer()
+        }
+      }
     }
   })
 }
@@ -42,14 +55,26 @@ export const index = (server, model, association) => {
 export const create = (server, model, association) => {
   server.route({
     method: 'POST',
-    path: `${prefix}/${model._plural}/{id}/${association._plural}`,
+    path: `${prefix}/${model._plural}/{aid}/${association._plural}`,
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.id);
+      const instance = await model.findById(request.params.aid);
+
+      if (!instance) {
+        return reply(boom.notFound());
+      }
+
       const result = await instance[association.accessors.create](request.payload);
 
       reply(result);
+    },
+    config: {
+      validate: {
+        params: {
+          aid: joi.number().integer()
+        }
+      }
     }
   })
 }
@@ -62,9 +87,22 @@ export const add = (server, model, association) => {
     @error
     async handler(request, reply) {
       const instance = await model.findById(request.params.aid);
+
+      if (!instance) {
+        return reply(boom.notFound());
+      }
+
       const result = await instance[association.accessor.add](request.params.bid);
 
       reply(result);
+    },
+    config: {
+      validate: {
+        params: {
+          aid: joi.number().integer(),
+          bid: joi.number().integer()
+        }
+      }
     }
   })
 }
@@ -77,15 +115,21 @@ export const addMany = (server, model, association) => {
     @error
     async handler(request, reply) {
       const instance = await model.findById(request.params.aid);
+
+      if (!instance) {
+        return reply(boom.notFound());
+      }
+
       const result = await instance[association.accessor.add](request.query.id);
 
       reply(result);
-
-      reply(list);
     },
 
     config: {
       validate: {
+        params: {
+          aid: joi.number().integer()
+        },
         query: {
           id: joi.array().items(joi.number().integer()).required()
         }
@@ -106,6 +150,14 @@ export const destroy = (server, model, association) => {
       const result = await instance[association.accessors.remove](request.params.bid);
 
       reply(result);
+    },
+    config: {
+      validate: {
+        params: {
+          aid: joi.number().integer(),
+          bid: joi.number().integer()
+        }
+      }
     }
   })
 }
@@ -118,6 +170,11 @@ export const destroyMany = (server, model, association) => {
     @error
     async handler(request, reply) {
       const instance = await model.findById(request.params.aid);
+
+      if (!instance) {
+        return reply(boom.notFound());
+      }
+
       const ids = request.query.id;
       const destroyMethod = ids ? 'removeMultiple' : 'set';
 
@@ -128,6 +185,9 @@ export const destroyMany = (server, model, association) => {
 
     config: {
       validate: {
+        params: {
+          aid: joi.number().integer()
+        },
         query: {
           id: joi.array().items(joi.number().integer()).optional()
         }

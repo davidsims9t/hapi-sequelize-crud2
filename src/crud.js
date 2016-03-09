@@ -1,7 +1,7 @@
-import joi from 'joi';
-import boom from 'boom';
 import error from './error';
 import _ from 'lodash';
+import boom from 'boom';
+import joi from 'joi';
 
 let prefix, scopePrefix;
 
@@ -56,20 +56,10 @@ export const get = (server, model) => {
       if (request.query.include)
         var include = [request.models[request.query.include]];
 
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let instance = await model.findById(request.params.id, { where, include });
+      const instance = await model.findById(request.params.id, { include });
 
       if (!instance) {
-        reply(boom.notFound())
+        return reply(boom.notFound());
       }
 
       reply(instance);

@@ -1,6 +1,7 @@
-import joi from 'joi';
 import error from '../error';
 import _ from 'lodash';
+import boom from 'boom';
+import joi from 'joi';
 
 let prefix;
 
@@ -25,6 +26,11 @@ export const index = (server, model, association) => {
         include = [request.models[request.query.include]];
 
       const instance = await model.findById(request.params.aid);
+
+      if (!instance) {
+        return reply(boom.notFound());
+      }
+
       const where = _.omit(request.query, 'include');
       const result = await instance[association.accessors.get]({
         where,
@@ -43,7 +49,12 @@ export const create = (server, model, association) => {
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.id);
+      const instance = await model.findById(request.params.aid);
+
+      if (!instance) {
+        return reply(boom.notFound());
+      }
+
       const result = await instance[association.accessors.create](request.payload);
 
       reply(result);
@@ -59,8 +70,13 @@ export const set = (server, model, association) => {
     @error
     async handler(request, reply) {
       const instance = await model.findById(request.params.aid);
+
+      if (!instance) {
+        return reply(boom.notFound());
+      }
+
       const result = await instance[association.accessor.set](request.params.bid);
-        
+
       reply(result);
     }
   })
@@ -74,6 +90,11 @@ export const destroy = (server, model, association) => {
     @error
     async handler(request, reply) {
       const instance = await model.findById(request.params.aid);
+
+      if (!instance) {
+        return reply(boom.notFound());
+      }
+
       const result = await instanceA[association.accessor.set](null);
 
       reply(result);

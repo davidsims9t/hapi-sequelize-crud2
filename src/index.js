@@ -1,7 +1,7 @@
 import crud, { associations } from './crud';
-import url from 'url';
 import qs from 'qs';
 import snakeCase from 'snake-case';
+import url from 'url';
 
 const register = (server, options = {}, next) => {
   options.prefix = options.prefix || '';
@@ -38,8 +38,6 @@ const register = (server, options = {}, next) => {
     if (model.options.name.singular !== model.name) continue;
 
     crud(server, model, options);
-
-    if (model.name !== 'message') continue;
 
     for (let key of Object.keys(model.associations)) {
       let association = model.associations[key];
