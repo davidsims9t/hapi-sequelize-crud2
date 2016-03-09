@@ -1,7 +1,7 @@
-import error from './error';
-import _ from 'lodash';
 import boom from 'boom';
+import error from './error';
 import joi from 'joi';
+import { queryParams, validation } from './helpers';
 
 let prefix, scopePrefix;
 
@@ -10,6 +10,7 @@ export default (server, model, options) => {
   scopePrefix = options.scopePrefix;
 
   index(server, model);
+  count(server, model);
   get(server, model);
   scope(server, model);
   create(server, model);
@@ -24,10 +25,7 @@ export const index = (server, model) => {
 
     @error
     async handler(request, reply) {
-      if (request.query.include)
-        var include = [request.models[request.query.include]];
-
-      let where = _.omit(request.query, 'include');
+      const { where, offset, limit, include } = queryParams(request);
 
       for (const key of Object.keys(where)) {
         try {
@@ -38,10 +36,20 @@ export const index = (server, model) => {
       }
 
       let list = await model.findAll({
-        where, include
+        where, include, offset, limit
       });
 
       reply(list);
+    },
+    config: {
+      validate: {
+        query: {
+          filter: validation.filter(model),
+          include: validation.include(model),
+          offset: validation.offset,
+          limit: validation.limit
+        }
+      }
     }
   });
 }
@@ -53,8 +61,7 @@ export const get = (server, model) => {
 
     @error
     async handler(request, reply) {
-      if (request.query.include)
-        var include = [request.models[request.query.include]];
+      const { include } = queryParams(request);
 
       const instance = await model.findById(request.params.id, { include });
 
@@ -68,6 +75,9 @@ export const get = (server, model) => {
       validate: {
         params: {
           id: joi.number().integer()
+        },
+        query: {
+          include: validation.include(model)
         }
       }
     }
@@ -83,10 +93,7 @@ export const scope = (server, model) => {
 
     @error
     async handler(request, reply) {
-      if (request.query.include)
-        var include = [request.models[request.query.include]];
-
-      let where = _.omit(request.query, 'include');
+      const { where, offset, limit, include } = queryParams(request);
 
       for (const key of Object.keys(where)) {
         try {
@@ -96,7 +103,7 @@ export const scope = (server, model) => {
         }
       }
 
-      const list = await model.scope(request.params.scope).findAll({ include, where });
+      const list = await model.scope(request.params.scope).findAll({ include, where, offset, limit });
 
       reply(list);
     },
@@ -104,6 +111,12 @@ export const scope = (server, model) => {
       validate: {
         params: {
           scope: joi.string().valid(...scopes)
+        },
+        query: {
+          filter: validation.filter(model),
+          include: validation.include(model),
+          offset: validation.offset,
+          limit: validation.limit
         }
       }
     }
@@ -172,6 +185,29 @@ export const destroy = (server, model) => {
       validate: {
         params: {
           id: joi.number().integer()
+        }
+      }
+    }
+  })
+}
+
+export const count = (server, model) => {
+  server.route({
+    method: 'GET',
+    path: `${prefix}/${model._plural}/count`,
+
+    @error
+    async handler(request, reply) {
+      const { where } = queryParams(request);
+
+      const count = await model.count({ where });
+
+      reply({ count });
+    },
+    config: {
+      validate: {
+        query: {
+          filter: validation.filter(model)
         }
       }
     }

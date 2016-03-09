@@ -1,7 +1,7 @@
 import error from '../error';
-import _ from 'lodash';
 import boom from 'boom';
 import joi from 'joi';
+import { queryParams, validation } from '../helpers';
 
 let prefix, scopePrefix;
 
@@ -15,6 +15,7 @@ export default (server, model, association, options) => {
   addMany(server, model, association);
   destroy(server, model, association);
   destroyMany(server, model, association);
+  count(server, model, association);
 }
 
 export const index = (server, model, association) => {
@@ -24,20 +25,19 @@ export const index = (server, model, association) => {
 
     @error
     async handler(request, reply) {
-      let include = [];
-      if (request.query.include)
-        include = [request.models[request.query.include]];
-
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
         return reply(boom.notFound());
       }
 
-      const where = _.omit(request.query, 'include');
+      const { where, offset, limit, include } = queryParams(request);
+
       const result = await instance[association.accessors.get]({
         where,
-        include
+        include,
+        offset,
+        limit,
       });
 
       reply(result);
@@ -46,6 +46,12 @@ export const index = (server, model, association) => {
       validate: {
         params: {
           aid: joi.number().integer()
+        },
+        query: {
+          filter: validation.filter(association.target),
+          include: validation.where(association.target),
+          offset: validation.offset,
+          limit: validation.limit
         }
       }
     }
@@ -72,7 +78,7 @@ export const create = (server, model, association) => {
     config: {
       validate: {
         params: {
-          aid: joi.number().integer()
+          aid: validation.id
         }
       }
     }
@@ -99,8 +105,8 @@ export const add = (server, model, association) => {
     config: {
       validate: {
         params: {
-          aid: joi.number().integer(),
-          bid: joi.number().integer()
+          aid: validation.id,
+          bid: validation.id
         }
       }
     }
@@ -128,10 +134,10 @@ export const addMany = (server, model, association) => {
     config: {
       validate: {
         params: {
-          aid: joi.number().integer()
+          aid: validation.id
         },
         query: {
-          id: joi.array().items(joi.number().integer()).required()
+          id: joi.array().items(validation.id).required()
         }
       }
     }
@@ -154,8 +160,8 @@ export const destroy = (server, model, association) => {
     config: {
       validate: {
         params: {
-          aid: joi.number().integer(),
-          bid: joi.number().integer()
+          aid: validation.id,
+          bid: validation.id
         }
       }
     }
@@ -186,10 +192,42 @@ export const destroyMany = (server, model, association) => {
     config: {
       validate: {
         params: {
-          aid: joi.number().integer()
+          aid: validation.id
         },
         query: {
-          id: joi.array().items(joi.number().integer()).optional()
+          id: joi.array().items(validation.id).optional()
+        }
+      }
+    }
+  })
+}
+
+export const count = (server, model, association) => {
+  server.route({
+    method: 'GET',
+    path: `${prefix}/${model._plural}/{aid}/${association._plural}/count`,
+
+    @error
+    async handler(request, reply) {
+      const instance = await model.findById(request.params.aid);
+
+      if (!instance) {
+        return reply(boom.notFound());
+      }
+
+      const { where } = queryParams(request);
+
+      const count = await instance[association.accessors.count]({ where });
+
+      reply({ count });
+    },
+    config: {
+      validate: {
+        params: {
+          aid: validation.id
+        },
+        query: {
+          filter: validation.filter(model)
         }
       }
     }

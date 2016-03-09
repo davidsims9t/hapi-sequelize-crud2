@@ -1,7 +1,7 @@
 import error from '../error';
-import _ from 'lodash';
 import boom from 'boom';
 import joi from 'joi';
+import { queryParams, validation } from '../helpers'
 
 let prefix;
 
@@ -21,21 +21,15 @@ export const index = (server, model, association) => {
 
     @error
     async handler(request, reply) {
-      let include = [];
-      if (request.query.include)
-        include = [request.models[request.query.include]];
-
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
         return reply(boom.notFound());
       }
 
-      const where = _.omit(request.query, 'include');
-      const result = await instance[association.accessors.get]({
-        where,
-        include
-      });
+      const { include } = queryParams(request)
+
+      const result = await instance[association.accessors.get]({ include });
 
       reply(result);
     }

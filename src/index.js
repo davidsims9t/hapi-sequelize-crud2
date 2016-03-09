@@ -62,7 +62,7 @@ const register = (server, options = {}, next) => {
       } catch(e) {
         // There might be conflicts in case of models associated with themselves and some other
         // rare cases.
-        console.warm(e)
+        console.warn(e)
       }
     }
   }
