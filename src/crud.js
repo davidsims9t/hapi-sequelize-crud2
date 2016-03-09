@@ -1,4 +1,5 @@
 import joi from 'joi';
+import boom from 'boom';
 import error from './error';
 import _ from 'lodash';
 
@@ -8,17 +9,15 @@ export default (server, model, options) => {
   prefix = options.prefix;
   scopePrefix = options.scopePrefix;
 
-//   list(server, model);
+  index(server, model);
   get(server, model);
   scope(server, model);
   create(server, model);
   destroy(server, model);
-  destroyScope(server, model);
   update(server, model);
 }
 
-/*
-export const list = (server, model) => {
+export const index = (server, model) => {
   server.route({
     method: 'GET',
     path: `${prefix}/${model._plural}`,
@@ -46,19 +45,18 @@ export const list = (server, model) => {
     }
   });
 }
-*/
 
 export const get = (server, model) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${model._plural}/{id?}`,
+    path: `${prefix}/${model._plural}/{id}`,
 
     @error
     async handler(request, reply) {
       if (request.query.include)
         var include = [request.models[request.query.include]];
 
-      let where = request.params.id ? { id : request.params.id } : _.omit(request.query, 'include');
+      let where = _.omit(request.query, 'include');
 
       for (const key of Object.keys(where)) {
         try {
@@ -68,15 +66,19 @@ export const get = (server, model) => {
         }
       }
 
-      let instance = await model[request.params.id ? 'findOne' : 'findAll']({ where, include });
+      let instance = await model.findById(request.params.id, { where, include });
+
+      if (!instance) {
+        reply(boom.notFound())
+      }
 
       reply(instance);
     },
     config: {
       validate: {
-        params: joi.object().keys({
+        params: {
           id: joi.number().integer()
-        })
+        }
       }
     }
   })
@@ -104,15 +106,15 @@ export const scope = (server, model) => {
         }
       }
 
-      let list = await model.scope(request.params.scope).findAll({ include, where });
+      const list = await model.scope(request.params.scope).findAll({ include, where });
 
       reply(list);
     },
     config: {
       validate: {
-        params: joi.object().keys({
+        params: {
           scope: joi.string().valid(...scopes)
-        })
+        }
       }
     }
   });
@@ -125,75 +127,11 @@ export const create = (server, model) => {
 
     @error
     async handler(request, reply) {
-      let instance = await model.create(request.payload);
+      const instance = await model.create(request.payload);
 
       reply(instance);
     }
   })
-}
-
-export const destroy = (server, model) => {
-  server.route({
-    method: 'DELETE',
-    path: `${prefix}/${model._plural}/{id?}`,
-
-    @error
-    async handler(request, reply) {
-      let where = request.params.id ? { id : request.params.id } : request.query;
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await model.findAll({ where });
-
-      await* list.map(instance => instance.destroy());
-
-      reply(list.length === 1 ? list[0] : list);
-    }
-  })
-}
-
-export const destroyScope = (server, model) => {
-  let scopes = Object.keys(model.options.scopes);
-
-  server.route({
-    method: 'DELETE',
-    path: `${prefix}/${model._plural}/${scopePrefix}/{scope}`,
-
-    @error
-    async handler(request, reply) {
-      if (request.query.include)
-        var include = [request.models[request.query.include]];
-
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await model.scope(request.params.scope).findAll({ include, where });
-
-      await* list.map(instance => instance.destroy());
-
-      reply(list);
-    },
-    config: {
-      validate: {
-        params: joi.object().keys({
-          scope: joi.string().valid(...scopes)
-        })
-      }
-    }
-  });
 }
 
 export const update = (server, model) => {
@@ -203,15 +141,49 @@ export const update = (server, model) => {
 
     @error
     async handler(request, reply) {
-      let instance = await model.findOne({
-        where: {
-          id: request.params.id
+      const instance = await model.findById(request.params.id);
+
+      if (!instance) {
+        reply(boom.notFound());
+      }
+
+      const result = await instance.update(request.payload);
+
+      reply(result);
+    },
+    config: {
+      validate: {
+        params: {
+          id: joi.number().integer()
         }
-      });
+      }
+    }
+  })
+}
 
-      await instance.update(request.payload);
+export const destroy = (server, model) => {
+  server.route({
+    method: 'DELETE',
+    path: `${prefix}/${model._plural}/{id}`,
 
-      reply(instance);
+    @error
+    async handler(request, reply) {
+      const instance = await model.findById(request.params.id);
+
+      if (!instance) {
+        reply(boom.notFound());
+      }
+
+      const result = await instance.destroy();
+
+      reply(result);
+    },
+    config: {
+      validate: {
+        params: {
+          id: joi.number().integer()
+        }
+      }
     }
   })
 }
