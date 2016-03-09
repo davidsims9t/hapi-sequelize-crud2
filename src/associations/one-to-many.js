@@ -4,23 +4,22 @@ import _ from 'lodash';
 
 let prefix, scopePrefix;
 
-export default (server, a, b, options) => {
+export default (server, model, association, options) => {
   prefix = options.prefix;
-  scopePrefix = options.scopePrefix;  
+  scopePrefix = options.scopePrefix;
 
-  get(server, a, b);
-  list(server, a, b);
-  scope(server, a, b);
-  scopeScope(server, a, b);
-  destroy(server, a, b);
-  destroyScope(server, a, b);
-  update(server, a, b);
+  index(server, model, association);
+  create(server, model, association);
+  add(server, model, association);
+  addMany(server, model, association);
+  destroy(server, model, association);
+  destroyMany(server, model, association);
 }
 
-export const get = (server, a, b) => {
+export const index = (server, model, association) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._plural}/{aid}/${b._plural}/{bid}`,
+    path: `${prefix}/${model._plural}/{aid}/${association._plural}`,
 
     @error
     async handler(request, reply) {
@@ -28,256 +27,111 @@ export const get = (server, a, b) => {
       if (request.query.include)
         include = [request.models[request.query.include]];
 
-      let instance = await b.findOne({
-        where: {
-          id: request.params.bid
-        },
-
-        include: include.concat({
-          where: {
-            id: request.params.aid
-          },
-          model: a
-        })
+      const instance = await model.findById(request.params.aid);
+      const where = _.omit(request.query, 'include');
+      const result = await instance[association.accessors.get]({
+        where,
+        include
       });
 
-      reply(list);
+      reply(result);
     }
   })
 }
 
-export const list = (server, a, b) => {
+export const create = (server, model, association) => {
   server.route({
-    method: 'GET',
-    path: `${prefix}/${a._plural}/{aid}/${b._plural}`,
+    method: 'POST',
+    path: `${prefix}/${model._plural}/{id}/${association._plural}`,
 
     @error
     async handler(request, reply) {
-      let include = [];
-      if (request.query.include)
-        include = [request.models[request.query.include]];
+      const instance = await model.findById(request.params.id);
+      const result = await instance[association.accessors.create](request.payload);
 
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await b.findAll({
-        where,
-
-        include: include.concat({
-          where: {
-            id: request.params.aid
-          },
-          model: a
-        })
-      });
-
-      reply(list);
+      reply(result);
     }
   })
 }
 
-export const scope = (server, a, b) => {
-  let scopes = Object.keys(b.options.scopes);
-
-  server.route({
-    method: 'GET',
-    path: `${prefix}/${a._plural}/{aid}/${b._plural}/${scopePrefix}/{scope}`,
-
-    @error
-    async handler(request, reply) {
-      let include = [];
-      if (request.query.include)
-        include = [request.models[request.query.include]];
-
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await b.scope(request.params.scope).findAll({
-        where,
-        include: include.concat({
-          where: {
-            id: request.params.aid
-          },
-          model: a
-        })
-      });
-
-      reply(list);
-    },
-
-    config: {
-      validate: {
-        params: joi.object().keys({
-          scope: joi.string().valid(...scopes),
-          aid: joi.number().integer().required()
-        })
-      }
-    }
-  })
-}
-
-export const scopeScope = (server, a, b) => {
-  let scopes = {
-    a: Object.keys(a.options.scopes),
-    b: Object.keys(b.options.scopes)
-  };
-
-  server.route({
-    method: 'GET',
-    path: `${prefix}/${a._plural}/${scopePrefix}/{scopea}/${b._plural}/${scopePrefix}/{scopeb}`,
-
-    @error
-    async handler(request, reply) {
-      let include = [];
-      if (request.query.include)
-        include = [request.models[request.query.include]];
-
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await b.scope(request.params.scopeb).findAll({
-        where,
-        include: include.concat({
-          model: a.scope(request.params.scopea)
-        })
-      })
-
-      reply(list);
-    },
-
-    config: {
-      validate: {
-        params: joi.object().keys({
-          scopea: joi.string().valid(...scopes.a),
-          scopeb: joi.string().valid(...scopes.b)
-        })
-      }
-    }
-  })
-}
-
-export const destroy = (server, a, b) => {
-  server.route({
-    method: 'DELETE',
-    path: `${prefix}/${a._plural}/{aid}/${b._plural}`,
-
-    @error
-    async handler(request, reply) {
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await b.findAll({
-        where,
-        include: {
-          model: a,
-          where: {
-            id: request.params.aid
-          }
-        }
-      });
-
-      await* list.map(instance => instance.destroy());
-
-      reply(list);
-    }
-  })
-}
-
-export const destroyScope = (server, a, b) => {
-  let scopes = Object.keys(b.options.scopes);
-
-  server.route({
-    method: 'DELETE',
-    path: `${prefix}/${a._plural}/{aid}/${b._plural}/${scopePrefix}/{scope}`,
-
-    @error
-    async handler(request, reply) {
-      let where = _.omit(request.query, 'include');
-
-      for (const key of Object.keys(where)) {
-        try {
-          where[key] = JSON.parse(where[key]);
-        } catch (e) {
-          //
-        }
-      }
-
-      let list = await b.scope(request.params.scope).findAll({
-        where,
-
-        include: {
-          model: a,
-          where: {
-            id: request.params.aid
-          }
-        }
-      });
-
-      await* list.map(instance => instance.destroy());
-
-      reply(list);
-    },
-
-    config: {
-      validate: {
-        params: joi.object().keys({
-          scope: joi.string().valid(...scopes),
-          aid: joi.number().integer().required()
-        })
-      }
-    }
-  });
-}
-
-export const update = (server, a, b) => {
+export const add = (server, model, association) => {
   server.route({
     method: 'PUT',
-    path: `${prefix}/${a._plural}/{aid}/${b._plural}`,
+    path: `${prefix}/${model._plural}/{aid}/${association._plural}/{bid}`,
 
     @error
     async handler(request, reply) {
-      let list = await b.findOne({
-        include: {
-          model: a,
-          where: {
-            id: request.params.aid,
+      const instance = await model.findById(request.params.aid);
+      const result = await instance[association.accessor.add](request.params.bid);
 
-            ...request.query
-          }
-        }
-      });
+      reply(result);
+    }
+  })
+}
 
-      await* list.map(instance => instance.update(request.payload));
+export const addMany = (server, model, association) => {
+  server.route({
+    method: 'PUT',
+    path: `${prefix}/${model._plural}/{aid}/${association._plural}`,
+
+    @error
+    async handler(request, reply) {
+      const instance = await model.findById(request.params.aid);
+      const result = await instance[association.accessor.add](request.query.id);
+
+      reply(result);
 
       reply(list);
+    },
+
+    config: {
+      validate: {
+        query: {
+          id: joi.array().items(joi.number().integer()).required()
+        }
+      }
+    }
+  })
+}
+
+export const destroy = (server, model, association) => {
+  server.route({
+    method: 'DELETE',
+    path: `${prefix}/${model._plural}/{aid}/${association._plural}/{bid}`,
+
+    @error
+    async handler(request, reply) {
+      const instance = await model.findById(request.params.aid);
+
+      const result = await instance[association.accessors.remove](request.params.bid);
+
+      reply(result);
+    }
+  })
+}
+
+export const destroyMany = (server, model, association) => {
+  server.route({
+    method: 'DELETE',
+    path: `${prefix}/${model._plural}/{aid}/${association._plural}`,
+
+    @error
+    async handler(request, reply) {
+      const instance = await model.findById(request.params.aid);
+      const ids = request.query.id;
+      const destroyMethod = ids ? 'removeMultiple' : 'set';
+
+      const result = await instance[association.accessors[destroyMethod]](ids);
+
+      reply(result);
+    },
+
+    config: {
+      validate: {
+        query: {
+          id: joi.array().items(joi.number().integer()).optional()
+        }
+      }
     }
   })
 }

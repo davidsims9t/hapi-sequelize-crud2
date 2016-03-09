@@ -10,7 +10,7 @@ export default (server, model, association, options) => {
   index(server, model, association);
   create(server, model, association);
   set(server, model, association);
-  destroy(server, model, association):
+  destroy(server, model, association);
 }
 
 export const index = (server, model, association) => {
