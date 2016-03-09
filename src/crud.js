@@ -1,6 +1,6 @@
-import boom from 'boom';
+import Boom from 'boom';
+import Joi from 'joi';
 import error from './error';
-import joi from 'joi';
 import { queryParams, validation } from './helpers';
 
 let prefix, scopePrefix;
@@ -66,7 +66,7 @@ export const get = (server, model) => {
       const instance = await model.findById(request.params.id, { include });
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       reply(instance);
@@ -74,7 +74,7 @@ export const get = (server, model) => {
     config: {
       validate: {
         params: {
-          id: joi.number().integer()
+          id: Joi.number().integer()
         },
         query: {
           include: validation.include(model)
@@ -110,7 +110,7 @@ export const scope = (server, model) => {
     config: {
       validate: {
         params: {
-          scope: joi.string().valid(...scopes)
+          scope: Joi.string().valid(...scopes)
         },
         query: {
           filter: validation.filter(model),
@@ -147,7 +147,7 @@ export const update = (server, model) => {
       const instance = await model.findById(request.params.id);
 
       if (!instance) {
-        reply(boom.notFound());
+        reply(Boom.notFound());
       }
 
       const result = await instance.update(request.payload);
@@ -157,7 +157,7 @@ export const update = (server, model) => {
     config: {
       validate: {
         params: {
-          id: joi.number().integer()
+          id: validation.id
         }
       }
     }
@@ -174,7 +174,7 @@ export const destroy = (server, model) => {
       const instance = await model.findById(request.params.id);
 
       if (!instance) {
-        reply(boom.notFound());
+        reply(Boom.notFound());
       }
 
       const result = await instance.destroy();
@@ -184,7 +184,7 @@ export const destroy = (server, model) => {
     config: {
       validate: {
         params: {
-          id: joi.number().integer()
+          id: validation.id
         }
       }
     }

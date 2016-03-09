@@ -1,6 +1,6 @@
+import Boom from 'boom';
+import Joi from 'joi';
 import error from '../error';
-import boom from 'boom';
-import joi from 'joi';
 import { queryParams, validation } from '../helpers'
 
 let prefix;
@@ -24,7 +24,7 @@ export const index = (server, model, association) => {
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       const { include } = queryParams(request)
@@ -46,7 +46,7 @@ export const create = (server, model, association) => {
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       const result = await instance[association.accessors.create](request.payload);
@@ -66,7 +66,7 @@ export const set = (server, model, association) => {
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       const result = await instance[association.accessor.set](request.params.bid);
@@ -86,7 +86,7 @@ export const destroy = (server, model, association) => {
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       const result = await instanceA[association.accessor.set](null);

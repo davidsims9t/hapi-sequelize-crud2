@@ -1,16 +1,16 @@
-import joi from 'joi';
+import Joi from 'joi';
 
 export const validation = {
-  id: joi.number().integer().min(1).required(),
-  limit: joi.number().integer().min(0).default(0, 'results offset'),
-  offset: joi.number().integer().min(1).default(20, 'number of results per set'),
+  id: Joi.number().integer().min(1).required(),
+  limit: Joi.number().integer().min(0).default(0, 'results offset'),
+  offset: Joi.number().integer().min(1).default(20, 'number of results per set'),
 
   include(model) {
-    return joi.string();
+    return Joi.string();
   },
 
   filter(model) {
-    return joi.object();
+    return Joi.object();
   }
 }
 

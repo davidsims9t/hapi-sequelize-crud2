@@ -1,6 +1,6 @@
+import Boom from 'boom';
+import Joi from 'joi';
 import error from '../error';
-import boom from 'boom';
-import joi from 'joi';
 import { queryParams, validation } from '../helpers';
 
 let prefix, scopePrefix;
@@ -28,7 +28,7 @@ export const index = (server, model, association) => {
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       const { where, offset, limit, include } = queryParams(request);
@@ -45,7 +45,7 @@ export const index = (server, model, association) => {
     config: {
       validate: {
         params: {
-          aid: joi.number().integer()
+          aid: Joi.number().integer()
         },
         query: {
           filter: validation.filter(association.target),
@@ -68,7 +68,7 @@ export const create = (server, model, association) => {
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       const result = await instance[association.accessors.create](request.payload);
@@ -95,7 +95,7 @@ export const add = (server, model, association) => {
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       const result = await instance[association.accessor.add](request.params.bid);
@@ -123,7 +123,7 @@ export const addMany = (server, model, association) => {
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       const result = await instance[association.accessor.add](request.query.id);
@@ -137,7 +137,7 @@ export const addMany = (server, model, association) => {
           aid: validation.id
         },
         query: {
-          id: joi.array().items(validation.id).required()
+          id: Joi.array().items(validation.id).required()
         }
       }
     }
@@ -178,7 +178,7 @@ export const destroyMany = (server, model, association) => {
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       const ids = request.query.id;
@@ -195,7 +195,7 @@ export const destroyMany = (server, model, association) => {
           aid: validation.id
         },
         query: {
-          id: joi.array().items(validation.id).optional()
+          id: Joi.array().items(validation.id).optional()
         }
       }
     }
@@ -212,7 +212,7 @@ export const count = (server, model, association) => {
       const instance = await model.findById(request.params.aid);
 
       if (!instance) {
-        return reply(boom.notFound());
+        return reply(Boom.notFound());
       }
 
       const { where } = queryParams(request);
