@@ -7,6 +7,7 @@ const register = (server, options = {}, next) => {
   options.prefix = options.prefix || '';
   options.scopePrefix = options.scopePrefix || 's';
   options.snakeCase = options.snakeCase || false;
+  options.private = options.private || [];
   
   let db = server.plugins['hapi-sequelize'].db;
   let models = db.sequelize.models;
@@ -27,7 +28,7 @@ const register = (server, options = {}, next) => {
     method: onRequest
   });
 
-  for (let modelName of Object.keys(models)) {
+  for (let modelName of Object.keys(models).filter(m => options.private.indexOf(m) === -1)) {
     let model = models[modelName];
     let { plural, singular } = model.options.name;
     model._plural = convertCase(plural);
