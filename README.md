@@ -1,12 +1,12 @@
-hapi-sequelize-crud
-===================
+hapi-sequelize-crud2
+====================
 
-Automatically generate a RESTful API for your models and associations
+Automatically generate a (more) RESTful API for your models and associations
 
 This plugin depends on [`hapi-sequelize`](https://github.com/danecando/hapi-sequelize).
 
 ```
-npm install -S hapi-sequelize-crud
+npm install -S hapi-sequelize-crud2
 ```
 
 ##Configure
@@ -23,9 +23,9 @@ let db = server.plugins['hapi-sequelize'].db;
 let models = db.sequelize.models;
 associations(models); // pretend this function defines our associations
 
-// Now, register hapi-sequelize-crud
+// Now, register hapi-sequelize-crud2
 await register({
-  register: require('hapi-sequelize-crud'),
+  register: require('hapi-sequelize-crud2'),
   options: {
     prefix: '/v1'
   }
@@ -48,39 +48,31 @@ You get these:
 
 ```
 # get an array of records
-GET /team/{id}/roles
-GET /role/{id}/teams
+GET /teams/{id}/roles
+GET /roles/{id}/teams
 # might also append query parameters to search for
-GET /role/{id}/teams?members=5
-
-# you might also use scopes
-GET /teams/{scope}/roles/{scope}
-GET /team/{id}/roles/{scope}
-GET /roles/{scope}/teams/{scope}
-GET /roles/{id}/teams/{scope}
-
-# get a single record
-GET /team/{id}/role/{id}
-GET /role/{id}/team/{id}
+GET /roles/{id}/teams?members=5
 
 # create
-POST /team/{id}/role
-POST /role/{id}/team
+POST /teams/{id}/roles
+POST /roles/{id}/teams
 
-# update
-PUT /team/{id}/role/{id}
-PUT /role/{id}/team/{id}
+# add to associations
+PUT /teams/{id}/role/{id}
+PUT /roles/{id}/team/{id}
 
 # delete
-DELETE /team/{id}/roles #search and destroy
-DELETE /role/{id}/teams?members=5
+DELETE /teams/{id}
+DELETE /roles/{id}
 
-DELETE /team/{id}/role/{id}
-DELETE /role/{id}/team/{id}
+# un-associate
+DELETE /teams/{id}/roles/{id}
+DELETE /roles/{id}/teams/{id}
 
-# you also get routes to associate objects with each other
-GET /associate/role/{id}/employee/{id} # associates role {id} with employee {id}
+# count
+GET /teams/count
+GET /roles/{id}/teams/count
 
 # you can specify a prefix to change the URLs like this:
-GET /v1/team/{id}/roles
+GET /v1/teams/{id}/roles
 ```

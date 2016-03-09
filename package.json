@@ -1,7 +1,7 @@
 {
   "name": "hapi-sequelize-crud2",
-  "version": "1.5.5",
-  "description": "Hapi plugin that automatically generates RESTful API for CRUD, with pluralized routes",
+  "version": "2.5.4",
+  "description": "Hapi plugin that automatically generates a more RESTful API for CRUD, building on hapi-sequelize-crud",
   "main": "build/index.js",
   "config": {
     "ghooks": {
@@ -33,7 +33,6 @@
   "dependencies": {
     "boom": "^3.1.2",
     "joi": "7.2.1",
-    "lodash": "4.0.0",
     "qs": "^6.1.0",
     "snake-case": "^1.1.2"
   }
