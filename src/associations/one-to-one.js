@@ -4,19 +4,19 @@ import _ from 'lodash';
 
 let prefix;
 
-export default (server, a, b, options) => {
+export default (server, model, association, options) => {
   prefix = options.prefix;
 
-  get(server, a, b);
-  create(server, a, b);
-  destroy(server, a, b);
-  update(server, a, b);
+  index(server, model, association);
+  create(server, model, association);
+  set(server, model, association);
+  destroy(server, model, association):
 }
 
-export const get = (server, a, b) => {
+export const index = (server, model, association) => {
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._plural}/{aid}/${b._singular}`,
+    path: `${prefix}/${model._plural}/{aid}/${association._singular}`,
 
     @error
     async handler(request, reply) {
@@ -24,89 +24,59 @@ export const get = (server, a, b) => {
       if (request.query.include)
         include = [request.models[request.query.include]];
 
-      let where = _.omit(request.query, 'include');
-
-      let [instance] = await b.findAll({
+      const instance = await model.findById(request.params.aid);
+      const where = _.omit(request.query, 'include');
+      const result = await instance[association.accessors.get]({
         where,
-
-        include: include.concat({
-          model: a,
-          where: {
-            id: request.params.aid
-          }
-        })
+        include
       });
 
-      reply(instance);
+      reply(result);
     }
   })
 }
 
-export const create = (server, a, b) => {
+export const create = (server, model, association) => {
   server.route({
     method: 'POST',
-    path: `${prefix}/${a._plural}/{id}/${b._singular}`,
+    path: `${prefix}/${model._plural}/{id}/${association._singular}`,
 
     @error
     async handler(request, reply) {
-      request.payload[a.name + 'Id'] = request.params.id;
-      let instance = await request.models[b.name].create(request.payload);
+      const instance = await model.findById(request.params.id);
+      const result = await instance[association.accessors.create](request.payload);
 
-      reply(instance);
+      reply(result);
     }
   })
 }
 
-export const destroy = (server, a, b) => {
-  server.route({
-    method: 'DELETE',
-    path: `${prefix}/${a._plural}/{aid}/${b._singular}/{bid}`,
-
-    @error
-    async handler(request, reply) {
-      let instance = await b.findOne({
-        where: {
-          id: request.params.bid
-        },
-
-        include: [{
-          model: a,
-          where: {
-            id: request.params.aid
-          }
-        }]
-      });
-
-      await instance.destroy();
-
-      reply(instance);
-    }
-  })
-}
-
-export const update = (server, a, b) => {
+export const set = (server, model, association) => {
   server.route({
     method: 'PUT',
-    path: `${prefix}/${a._plural}/{aid}/${b._singular}/{bid}`,
+    path: `${prefix}/${model._plural}/{aid}/${association._singular}/{bid}`,
 
     @error
     async handler(request, reply) {
-      let instance = await b.findOne({
-        where: {
-          id: request.params.bid
-        },
+      const instance = await model.findById(request.params.aid);
+      const result = await instance[association.accessor.set](request.params.bid);
+        
+      reply(result);
+    }
+  })
+}
 
-        include: [{
-          model: a,
-          where: {
-            id: request.params.aid
-          }
-        }]
-      });
+export const destroy = (server, model, association) => {
+  server.route({
+    method: 'DELETE',
+    path: `${prefix}/${model._plural}/{aid}/${association._singular}`,
 
-      await instance.update(request.payload);
+    @error
+    async handler(request, reply) {
+      const instance = await model.findById(request.params.aid);
+      const result = await instanceA[association.accessor.set](null);
 
-      reply(instance);
+      reply(result);
     }
   })
 }

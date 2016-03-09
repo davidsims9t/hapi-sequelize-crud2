@@ -38,25 +38,50 @@ const register = (server, options = {}, next) => {
     if (model.options.name.singular !== model.name) continue;
 
     crud(server, model, options);
+    
+    if (model.name !== 'message') continue;
 
     for (let key of Object.keys(model.associations)) {
       let association = model.associations[key];
       let { associationType, source, target } = association;
 
-      let sourceName = source.options.name;
-      let targetName = target.options.name;
+      let associationName = association.options.name;
 
-      target._plural = convertCase(targetName.plural);
-      target._singular = convertCase(targetName.singular);
+      association._plural = convertCase(associationName.plural);
+      association._singular = convertCase(associationName.singular);
 
+/*
       let targetAssociations = target.associations[sourceName.plural] || target.associations[sourceName.singular];
       let sourceType = association.associationType,
           targetType = (targetAssociations || {}).associationType;
+*/
 
       try {
-        if (sourceType === 'BelongsTo' && (targetType === 'BelongsTo' || !targetType)) {
+        switch(associationType) {
+          case 'BelongsTo':
+            associations.oneToOne(server, source, association, options);
+            break;          
+/*
+          case 'HasOne':
+            associations.oneToOne(server, target, source, options);
+            break;
+          case 'HasMany':
+          case 'BelongsToMany':          
+            associations.oneToMany(server, source, target, options);
+            break;
+*/
+        }
+        
+/*
+        if (sourceType === 'BelongsTo') {
           associations.oneToOne(server, source, target, options);
-          associations.oneToOne(server, target, source, options);
+          //associations.oneToOne(server, target, source, options);
+        }
+        
+        
+        
+        if (sourceType === 'HasMany') {
+          associations.oneToMany(server, source, target, options);
         }
 
         if (sourceType === 'BelongsTo' && targetType === 'HasMany') {
@@ -72,12 +97,14 @@ const register = (server, options = {}, next) => {
           associations.oneToMany(server, source, target, options);
           associations.oneToMany(server, target, source, options);
         }
+*/
 
         associations.associate(server, source, target, options);
-        associations.associate(server, target, source, options);
+//         associations.associate(server, target, source, options);
       } catch(e) {
         // There might be conflicts in case of models associated with themselves and some other
         // rare cases.
+        console.trace(e)
       }
     }
   }

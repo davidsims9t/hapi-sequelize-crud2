@@ -88,7 +88,7 @@ export const scope = (server, a, b) => {
 
   server.route({
     method: 'GET',
-    path: `${prefix}/${a._plural}/{aid}/${b._plural}/{scope}`,
+    path: `${prefix}/${a._plural}/{aid}/${b._plural}/${scopePrefix}/{scope}`,
 
     @error
     async handler(request, reply) {
