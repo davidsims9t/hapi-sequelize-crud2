@@ -8,13 +8,9 @@ const Lab = require('lab');
 
 const mocks = require('./mocks');
 const snakeCase = require('snake-case');
-
-// Test shortcuts
 const lab = exports.lab = Lab.script();
 const expect = Code.expect;
-const before = lab.before;
 const beforeEach = lab.beforeEach;
-const afterEach = lab.afterEach;
 const describe = lab.describe;
 const it = lab.it;
 
@@ -57,48 +53,31 @@ const expectOneToManyRoutes = (routes, modelName, associationName) => {
 }
 
 describe('hapi-sequelize-crud2', () => {
-  let server, db, product, category;
+  let server, db;
 
   beforeEach({ timeout: 5000 }, () => {
     server = new Hapi.Server();
     server.connection();
 
-    const options = {
-      models: 'test/models/**/*.js',
-      sequelize: {
-        dialect: 'sqlite',
-        define: {
-          timestamps: false
-        }
-      }
-    };
-
     const plugin = {
       register: require('hapi-sequelize'),
-      options: options
+      options: {
+        models: 'test/models/**/*.js',
+        sequelize: {
+          dialect: 'sqlite',
+          define: {
+            timestamps: false
+          }
+        }
+      }
     };
 
     return server.register([plugin])
       .then(() => {
         db = server.plugins['hapi-sequelize'].db.sequelize;
 
-        return db.sync({ force: true })
-      })
-  /*
-      .then(() => {
-        const Product = db.models.product
-        , Category = db.models.category;
-
-        return Promise.all([
-          Product.create(mocks.product),
-          Category.create(mocks.category)
-        ]);
-      })
-      .then(results => {
-        product = results[0],
-        category = results[1];
+        return db.sync({ force: true });
       });
-  */
   });
 
   it('should register CRUD routes for each model', () => {
@@ -192,7 +171,7 @@ describe('hapi-sequelize-crud2', () => {
       register: require('../build')
     };
 
-    return server.register([plugin])
+    return server.register(require('../build'))
       .then(() => {
         const routes = routesToStrings(server);
 
@@ -233,7 +212,7 @@ describe('hapi-sequelize-crud2', () => {
       register: require('../build')
     };
 
-    return server.register([plugin])
+    return server.register(require('../build'))
       .then(() => {
         const routes = routesToStrings(server);
 

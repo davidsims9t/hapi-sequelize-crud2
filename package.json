@@ -33,6 +33,7 @@
     "grunt-contrib-watch": "0.6.1",
     "hapi": "13.x.x",
     "hapi-sequelize": "^2.2.4",
+    "http-status-codes": "^1.0.6",
     "lab": "^10.2.0",
     "sequelize": "^3.19.3",
     "sqlite3": "^3.1.1"

@@ -5,6 +5,13 @@ module.exports = function (sequelize, DataTypes) {
     name: DataTypes.STRING,
     inventory: DataTypes.INTEGER
   }, {
+    scopes: {
+      outOfStock: {
+        where: {
+          inventory: 0
+        }
+      }
+    },
     classMethods: {
       associate: function(db) {
         this.belongsTo(db.productCategory);
