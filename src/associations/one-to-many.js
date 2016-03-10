@@ -49,7 +49,7 @@ export const index = (server, model, association) => {
         },
         query: {
           filter: validation.filter(association.target),
-          include: validation.where(association.target),
+          include: validation.include(association.target),
           offset: validation.offset,
           limit: validation.limit
         }

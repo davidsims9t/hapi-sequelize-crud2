@@ -9,7 +9,7 @@
     }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "lab -r html -o test/coverage.html -I core,Reflect,__core-js_shared__,System,_babelPolyfill,regeneratorRuntime"
   },
   "repository": {
     "git": "https://github.com/alexanderreiff/hapi-sequelize-crud"
@@ -24,16 +24,28 @@
   "license": "MIT",
   "devDependencies": {
     "babel": "5.8.3",
+    "babel-polyfill": "^6.6.1",
+    "code": "^2.1.0",
     "ghooks": "1.0.3",
     "grunt": "0.4.5",
     "grunt-babel": "5.0.3",
     "grunt-contrib-clean": "0.7.0",
-    "grunt-contrib-watch": "0.6.1"
+    "grunt-contrib-watch": "0.6.1",
+    "hapi": "13.x.x",
+    "hapi-sequelize": "^2.2.4",
+    "lab": "^10.2.0",
+    "sequelize": "^3.19.3",
+    "sqlite3": "^3.1.1"
   },
   "dependencies": {
     "boom": "^3.1.2",
     "joi": "7.2.1",
     "qs": "^6.1.0",
     "snake-case": "^1.1.2"
+  },
+  "peerDependencies": {
+    "hapi": "13.x.x",
+    "sequelize": "^3.x",
+    "hapi-sequelize": "^2.x"
   }
 }
