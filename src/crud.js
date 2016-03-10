@@ -1,30 +1,48 @@
 import Boom from 'boom';
+import Hoek from 'hoek';
 import Joi from 'joi';
 import error from './error';
 import { queryParams, validation } from './helpers';
 
-let prefix, scopePrefix;
+let prefix, scopePrefix, handlerOptions;
 
-export default (server, model, options) => {
-  prefix = options.prefix;
-  scopePrefix = options.scopePrefix;
-
-  index(server, model);
-  count(server, model);
-  get(server, model);
-  scope(server, model);
-  create(server, model);
-  destroy(server, model);
-  update(server, model);
+const defaultHandlerOptions = {
+  index: true,
+  get: true,
+  count: true,
+  scope: true,
+  create: true,
+  destroy: true,
+  update: true
 }
 
-export const index = (server, model) => {
-  server.route({
+const methods = {};
+
+export default (server, model, options) => {
+  prefix = options.prefix,
+  scopePrefix = options.scopePrefix,
+  handlerOptions = Hoek.applyToDefaults(defaultHandlerOptions, options.handlerOptions || {});
+
+  for (const method in methods) {
+    let methodOpts = handlerOptions[method];
+
+    if (!! methodOpts) {
+      methodOpts = typeof methodOpts === 'object' ? methodOpts : {};
+
+      methods[method](server, model, methodOpts);
+    }
+  }
+}
+
+export const index = methods.index = (server, model, options) => {
+  const route = Hoek.applyToDefaults({
     method: 'GET',
     path: `${prefix}/${model._plural}`,
 
     @error
     async handler(request, reply) {
+      console.log(queryParams(request));
+
       const { where, offset, limit, include } = queryParams(request);
 
       for (const key of Object.keys(where)) {
@@ -51,11 +69,13 @@ export const index = (server, model) => {
         }
       }
     }
-  });
+  }, options);
+
+  server.route(route);
 }
 
-export const get = (server, model) => {
-  server.route({
+export const get = methods.get = (server, model, options) => {
+  const route = Hoek.applyToDefaults({
     method: 'GET',
     path: `${prefix}/${model._plural}/{id}`,
 
@@ -81,13 +101,15 @@ export const get = (server, model) => {
         }
       }
     }
-  })
+  }, options);
+
+  server.route(route);
 }
 
-export const scope = (server, model) => {
+export const scope = methods.scope = (server, model, options) => {
   let scopes = Object.keys(model.options.scopes);
 
-  server.route({
+  const route = Hoek.applyToDefaults({
     method: 'GET',
     path: `${prefix}/${model._plural}/${scopePrefix}/{scope}`,
 
@@ -120,11 +142,13 @@ export const scope = (server, model) => {
         }
       }
     }
-  });
+  }, options);
+
+  server.route(route);
 }
 
-export const create = (server, model) => {
-  server.route({
+export const create = methods.create = (server, model, options) => {
+  const route = Hoek.applyToDefaults({
     method: 'POST',
     path: `${prefix}/${model._plural}`,
 
@@ -134,11 +158,13 @@ export const create = (server, model) => {
 
       reply(instance);
     }
-  })
+  }, options);
+
+  server.route(route);
 }
 
-export const update = (server, model) => {
-  server.route({
+export const update = methods.update = (server, model, options) => {
+  const route = Hoek.applyToDefaults({
     method: 'PUT',
     path: `${prefix}/${model._plural}/{id}`,
 
@@ -161,11 +187,13 @@ export const update = (server, model) => {
         }
       }
     }
-  })
+  }, options);
+
+  server.route(route);
 }
 
-export const destroy = (server, model) => {
-  server.route({
+export const destroy = methods.destroy = (server, model, options) => {
+  const route = Hoek.applyToDefaults({
     method: 'DELETE',
     path: `${prefix}/${model._plural}/{id}`,
 
@@ -188,11 +216,13 @@ export const destroy = (server, model) => {
         }
       }
     }
-  })
+  }, options);
+
+  server.route(route);
 }
 
-export const count = (server, model) => {
-  server.route({
+export const count = methods.count = (server, model, options) => {
+  const route = Hoek.applyToDefaults({
     method: 'GET',
     path: `${prefix}/${model._plural}/count`,
 
@@ -211,7 +241,9 @@ export const count = (server, model) => {
         }
       }
     }
-  })
+  }, options);
+
+  server.route(route);
 }
 
 import * as associations from './associations/index';

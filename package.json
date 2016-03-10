@@ -40,6 +40,9 @@
   },
   "dependencies": {
     "boom": "^3.1.2",
+    "camel-case": "^1.2.2",
+    "glob": "^7.0.3",
+    "hoek": "^3.0.4",
     "joi": "7.2.1",
     "qs": "^6.1.0",
     "snake-case": "^1.1.2"

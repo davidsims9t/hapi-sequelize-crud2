@@ -1,21 +1,38 @@
 import Boom from 'boom';
+import Hoek from 'hoek';
 import Joi from 'joi';
 import error from '../error';
 import { queryParams, validation } from '../helpers'
 
 let prefix;
 
+const defaultHandlerOptions = {
+  index: true,
+  create: true,
+  update: true,
+  destroy: true
+};
+
+const methods = {};
+
 export default (server, model, association, options) => {
   prefix = options.prefix;
 
-  index(server, model, association);
-  create(server, model, association);
-  set(server, model, association);
-  destroy(server, model, association);
-}
+  const handlerOptions = Hoek.applyToDefaults(defaultHandlerOptions, options.handlerOptions);
 
-export const index = (server, model, association) => {
-  server.route({
+  for (const method in methods) {
+    let methodOpts = handlerOptions[method];
+
+    if (!! methodOpts) {
+      methodOpts = typeof methodOpts === 'object' ? methodOpts : {};
+
+      methods[method](server, model, association, methodOpts);
+    }
+  }
+};
+
+export const index = methods.index = (server, model, association, options) => {
+  const route = Hoek.applyToDefaults({
     method: 'GET',
     path: `${prefix}/${model._plural}/{aid}/${association._singular}`,
 
@@ -33,11 +50,13 @@ export const index = (server, model, association) => {
 
       reply(result);
     }
-  })
-}
+  }, options);
 
-export const create = (server, model, association) => {
-  server.route({
+  server.route(route);
+};
+
+export const create = methods.create = (server, model, association, options) => {
+  const route = Hoek.applyToDefaults({
     method: 'POST',
     path: `${prefix}/${model._plural}/{id}/${association._singular}`,
 
@@ -53,11 +72,13 @@ export const create = (server, model, association) => {
 
       reply(result);
     }
-  })
-}
+  }, options);
 
-export const set = (server, model, association) => {
-  server.route({
+  server.route(route);
+};
+
+export const update = methods.update = (server, model, association, options) => {
+  const route = Hoek.applyToDefaults({
     method: 'PUT',
     path: `${prefix}/${model._plural}/{aid}/${association._singular}/{bid}`,
 
@@ -73,11 +94,13 @@ export const set = (server, model, association) => {
 
       reply(result);
     }
-  })
-}
+  }, options);
 
-export const destroy = (server, model, association) => {
-  server.route({
+  server.route(route);
+};
+
+export const destroy = methods.destroy = (server, model, association, options) => {
+  const route = Hoek.applyToDefaults({
     method: 'DELETE',
     path: `${prefix}/${model._plural}/{aid}/${association._singular}`,
 
@@ -93,5 +116,7 @@ export const destroy = (server, model, association) => {
 
       reply(result);
     }
-  })
-}
+  }, options);
+
+  server.route(route);
+};
