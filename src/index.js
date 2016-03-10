@@ -1,26 +1,34 @@
+import Fs from 'fs';
+import Hoek from 'hoek';
+import URL from 'url';
+import QS from 'qs';
 import crud, { associations } from './crud';
-import qs from 'qs';
 import snakeCase from 'snake-case';
-import url from 'url';
 
-const register = (server, options = {}, next) => {
-  options.prefix = options.prefix || '';
-  options.scopePrefix = options.scopePrefix || 's';
-  options.snakeCase = options.snakeCase || false;
-  options.private = options.private || [];
+const internals = {};
 
-  let db = server.plugins['hapi-sequelize'].db;
-  let models = db.sequelize.models;
+internals.onRequest = function (request, reply) {
+  const uri = request.raw.req.url;
+  const parsed = URL.parse(uri, false);
+  parsed.query = QS.parse(parsed.query);
+  request.setUrl(parsed);
 
-  const onRequest = function (request, reply) {
-    const uri = request.raw.req.url;
-    const parsed = url.parse(uri, false);
-    parsed.query = qs.parse(parsed.query);
-    request.setUrl(parsed);
+  return reply.continue();
+};
 
-    return reply.continue();
-  };
+internals.optionDefaults = {
+  prefix: '',
+  scopePrefix: 's',
+  snakeCase: false,
+  private: []
+};
 
+exports.register = (server, options = {}, next) => {
+  options = Hoek.applyToDefaults(optionDefaults, options);
+
+  const db = server.plugins['hapi-sequelize'].db;
+  const models = db.sequelize.models;
+  const modelNames = Object.keys(models).filter(m => options.private.indexOf(m) === -1);
   const convertCase = options.snakeCase ? snakeCase : function (str) { return str; };
 
   server.ext({
@@ -28,22 +36,23 @@ const register = (server, options = {}, next) => {
     method: onRequest
   });
 
-  for (let modelName of Object.keys(models).filter(m => options.private.indexOf(m) === -1)) {
-    let model = models[modelName];
-    let { plural, singular } = model.options.name;
+  for (const modelName of modelNames) {
+    const model = models[modelName];
+    const { plural, singular } = model.options.name;
     model._plural = convertCase(plural);
     model._singular = convertCase(singular);
 
     // Join tables
     if (model.options.name.singular !== model.name) continue;
 
+    options.handlerOptions = handlerOptions(model);
+
     crud(server, model, options);
 
-    for (let key of Object.keys(model.associations)) {
-      let association = model.associations[key];
-      let { associationType, source, target } = association;
-
-      let associationName = association.options.name;
+    for (const key of Object.keys(model.associations)) {
+      const association = model.associations[key]
+      const associationName = association.options.name;
+      const { associationType, source, target } = association;
 
       association._plural = convertCase(associationName.plural);
       association._singular = convertCase(associationName.singular);
@@ -62,7 +71,7 @@ const register = (server, options = {}, next) => {
       } catch(e) {
         // There might be conflicts in case of models associated with themselves and some other
         // rare cases.
-        console.warn(e)
+        console.warn(e);
       }
     }
   }
@@ -70,8 +79,6 @@ const register = (server, options = {}, next) => {
   next();
 }
 
-register.attributes = {
+exports.register.attributes = {
   pkg: require('../package.json')
 }
-
-export { register };
