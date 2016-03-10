@@ -60,6 +60,14 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
     	});
   });
 
+  it('should filter the retrieved list of models by given querystring parameters', () => {
+
+  });
+
+  it('should restrict the retrieved list of models by given offset and limit parameters', () => {
+
+  });
+
   it('should retrieve a count of models', () => {
     return server.inject({ url: `${baseUrl}/count` })
       .then(res => {
@@ -82,6 +90,10 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
         expect(data).to.be.an.object();
         expect(data).to.deep.equal(model.get());
       });
+  });
+
+  it('should include given related models with a single instance', () => {
+
   });
 
   it('should retrieve a list of models by defined scope', () => {
@@ -136,16 +148,44 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
 
   it('should update a single existing model instance', () => {
     const updateAttributes = { inventory: 11 };
+    let data;
 
     return server.inject({ url: `${baseUrl}/${instance.id}`, method: 'PUT', payload: updateAttributes })
       .then(res => {
         expect(res.statusCode).to.equal(HttpStatus.OK);
 
-        //
+        data = JSON.parse(res.payload);
+        expect(data).to.be.an.object()
+                    .and.to.include(updateAttributes);
+
+        return Product.findById(data.id);
       })
+      .then(newInstance => {
+        const expected = Object.assign(instance.get(), updateAttributes);
+
+        expect(data).to.deep.equal(newInstance.get());
+        expect(newInstance.get()).to.deep.equal(expected);
+
+        instance = newInstance;
+      });
   });
 
   it('should destroy a single model instance', () => {
+    return server.inject({ url: `${baseUrl}/${instance.id}`, method: 'DELETE'})
+      .then(res => {
+        expect(res.statusCode).to.equal(HttpStatus.OK);
 
+        data = JSON.parse(res.payload);
+        console.log(data);
+
+        return Product.findById(instance.id);
+      })
+      .then(instance => {
+        expect(instance).to.be.null();
+
+        return server.inject({ url: `${baseUrl}/${instance.id}` });
+      }).then(res => {
+        expect(res.statusCode).to.equal(HttpStatus.NOT_FOUND);
+      });
   });
 });
