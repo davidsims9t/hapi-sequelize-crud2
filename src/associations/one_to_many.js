@@ -22,7 +22,11 @@ export default (server, model, association, options) => {
   prefix = options.prefix;
   scopePrefix = options.scopePrefix;
 
-  const handlerOptions = Hoek.applyToDefaults(defaultHandlerOptions, options.handlerOptions);
+  const associationOptions = options.handlerOptions.associations && options.handlerOptions.associations[association._plural]
+                              ? options.handlerOptions.associations[association._plural]
+                              : {}
+  ;
+  const handlerOptions = Hoek.applyToDefaults(defaultHandlerOptions, associationOptions);
 
   for (const method in methods) {
     let methodOpts = handlerOptions[method];
