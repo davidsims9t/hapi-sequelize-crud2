@@ -18,3 +18,9 @@ exports.productCategory = () => {
     rootCategory: true
   };
 };
+
+exports.tag = exports.generic = () => {
+  return {
+    name: `test model ${randomInt()}`,
+  };
+};

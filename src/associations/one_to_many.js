@@ -123,7 +123,7 @@ export const update = methods.update = (server, model, association, options) => 
         return reply(Boom.notFound());
       }
 
-      const result = await instance[association.accessor.add](request.params.bid);
+      const result = await instance[association.accessors.add](request.params.bid);
 
       reply(result);
     },
@@ -153,7 +153,7 @@ export const updateMany = methods.updateMany = (server, model, association, opti
         return reply(Boom.notFound());
       }
 
-      const result = await instance[association.accessor.add](request.query.id);
+      const result = await instance[association.accessors.add](request.query.id);
 
       reply(result);
     },
@@ -212,7 +212,7 @@ export const destroyMany = methods.destroyMany = (server, model, association, op
         return reply(Boom.notFound());
       }
 
-      const ids = request.query.id;
+      const ids = request.query.id || null;
       const destroyMethod = ids ? 'removeMultiple' : 'set';
 
       const result = await instance[association.accessors[destroyMethod]](ids);
