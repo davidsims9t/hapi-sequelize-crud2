@@ -94,8 +94,8 @@ describe('hapi-sequelize-crud2', () => {
 
         for (const modelName of Object.keys(db.models)) {
 
-          const model = db.models[modelName]
-          , name = model.options.name.plural;
+          const model = db.models[modelName];
+          const name = model.options.name.plural;
 
           expectCrudRoutes(routes, name);
         }
@@ -117,8 +117,8 @@ describe('hapi-sequelize-crud2', () => {
         const routes = routesToStrings(server);
 
         for (const modelName of Object.keys(db.models)) {
-          const model = db.models[modelName]
-          , name = model.options.name.plural;
+          const model = db.models[modelName];
+          const name = model.options.name.plural;
 
           expectCrudRoutes(routes, name, prefix);
         }
@@ -140,8 +140,8 @@ describe('hapi-sequelize-crud2', () => {
         const routes = routesToStrings(server);
 
         for (const modelName of privates) {
-          const model = db.models[modelName]
-          , name = model.options.name.plural;
+          const model = db.models[modelName];
+          const name = model.options.name.plural;
 
           expect(routes).to.not.include(`/${name}|get`);
         }
@@ -161,8 +161,8 @@ describe('hapi-sequelize-crud2', () => {
         const routes = routesToStrings(server);
 
         for (const modelName of Object.keys(db.models)) {
-          const model = db.models[modelName]
-          , name = snakeCase(model.options.name.plural);
+          const model = db.models[modelName];
+          const name = snakeCase(model.options.name.plural);
 
           expectCrudRoutes(routes, name);
         }
@@ -179,8 +179,8 @@ describe('hapi-sequelize-crud2', () => {
         const routes = routesToStrings(server);
 
         for (const modelName of Object.keys(db.models)) {
-          const model = db.models[modelName]
-          , name = model.options.name.plural;
+          const model = db.models[modelName];
+          const name = model.options.name.plural;
 
           expectScopeRoutes(routes, name);
         }
@@ -202,8 +202,8 @@ describe('hapi-sequelize-crud2', () => {
         const routes = routesToStrings(server);
 
         for (const modelName in db.models) {
-          const model = db.models[modelName]
-          , name = model.options.name.plural;
+          const model = db.models[modelName];
+          const name = model.options.name.plural;
 
           expectScopeRoutes(routes, name, scopePrefix);
         }
@@ -220,8 +220,8 @@ describe('hapi-sequelize-crud2', () => {
         const routes = routesToStrings(server);
 
         for (const modelName in db.models) {
-          const model = db.models[modelName]
-          , name = model.options.name.plural;
+          const model = db.models[modelName];
+          const name = model.options.name.plural;
 
           for (const key in db.associations) {
             const association = model.associations[key];

@@ -240,10 +240,9 @@ describe('hapi-sequelize-crud2 route handler overrides', () => {
         return server.inject({ url: '/productCategories/count' });
       })
       .then(res => {
-        expect(res.statusCode).to.equal(HttpStatus.OK);
-
         const data = JSON.parse(res.payload);
 
+        expect(res.statusCode).to.equal(HttpStatus.OK);
         expect(data).to.be.an.object();
         expect(data.count).to.be.null();
       });
