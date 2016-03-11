@@ -7,6 +7,7 @@ module.exports = function (sequelize, DataTypes) {
     classMethods: {
       associate: function(db) {
         this.belongsToMany(db.product, {through: 'productTag'});
+        this.belongsToMany(db.productCategory, {through: 'categoryTag'});
       }
     }
   });;

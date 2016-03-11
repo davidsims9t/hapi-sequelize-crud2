@@ -7,6 +7,7 @@ const Hapi = require('hapi');
 const Lab = require('lab');
 
 const mocks = require('./mocks');
+const routesToStrings = require('./helpers').routesToStrings;
 const snakeCase = require('snake-case');
 const lab = exports.lab = Lab.script();
 const expect = Code.expect;
@@ -14,19 +15,17 @@ const beforeEach = lab.beforeEach;
 const describe = lab.describe;
 const it = lab.it;
 
-const routesToStrings = (server) => {
-  return server.table()[0].table.map(r => `${r.path}|${r.method}`);
-}
-
 const expectCrudRoutes = (routes, modelName, prefix) => {
   if (prefix === undefined) prefix = '';
 
-  expect(routes).to.include(`${prefix}/${modelName}|get`);
-  expect(routes).to.include(`${prefix}/${modelName}|post`);
-  expect(routes).to.include(`${prefix}/${modelName}/{id}|get`);
-  expect(routes).to.include(`${prefix}/${modelName}/{id}|put`);
-  expect(routes).to.include(`${prefix}/${modelName}/{id}|delete`);
-  expect(routes).to.include(`${prefix}/${modelName}/count|get`);
+  expect(routes).to.include([
+    `${prefix}/${modelName}|get`,
+    `${prefix}/${modelName}|post`,
+    `${prefix}/${modelName}/{id}|get`,
+    `${prefix}/${modelName}/{id}|put`,
+    `${prefix}/${modelName}/{id}|delete`,
+    `${prefix}/${modelName}/count|get`
+  ]);
 }
 
 const expectScopeRoutes = (routes, modelName, prefix) => {
@@ -36,20 +35,24 @@ const expectScopeRoutes = (routes, modelName, prefix) => {
 }
 
 const expectOneToOneRoutes = (routes, modelName, associationName) => {
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}|get`);
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}|post`);
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}/{bid}|put`);
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}/{bid}|delete`);
+  expect(routes).to.include([
+    `/${modelName}/{aid}/${associationName}|get`,
+    `/${modelName}/{aid}/${associationName}|post`,
+    `/${modelName}/{aid}/${associationName}/{bid}|put`,
+    `/${modelName}/{aid}/${associationName}/{bid}|delete`
+  ]);
 }
 
 const expectOneToManyRoutes = (routes, modelName, associationName) => {
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}|get`);
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}|post`);
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}|put`);
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}/{bid}|put`);
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}/|delete`);
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}/{bid}|delete`);
-  expect(routes).to.include(`/${modelName}/{aid}/${associationName}/count|get`);
+  expect(routes).to.include([
+    `/${modelName}/{aid}/${associationName}|get`,
+    `/${modelName}/{aid}/${associationName}|post`
+    `/${modelName}/{aid}/${associationName}|put`,
+    `/${modelName}/{aid}/${associationName}/{bid}|put`,
+    `/${modelName}/{aid}/${associationName}|delete`,
+    `/${modelName}/{aid}/${associationName}/{bid}|delete`,
+    `/${modelName}/{aid}/${associationName}/count|get`
+  ]);
 }
 
 describe('hapi-sequelize-crud2', () => {

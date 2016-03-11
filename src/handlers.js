@@ -26,9 +26,10 @@ exports.loadHandlers = function(server, patterns) {
   internals.getFiles(patterns).forEach(f => {
     const pathInfo = Path.parse(f);
     const fileName = Path.resolve('.', pathInfo.dir, pathInfo.base);
-    const modelName = pathInfo.name.indexOf('_') !== -1
-                      ? pathInfo.name
-                      : camelCase(pathInfo.name);
+    const name = pathInfo.name.replace(/\..+$/, ''); // enables adding suffix for testing, e.g. modelName.timestamp.js
+    const modelName = name.indexOf('_') !== -1
+                      ? name
+                      : camelCase(name);
 
     internals.handlers[modelName] = require(fileName)(server, models[modelName]);
   });
