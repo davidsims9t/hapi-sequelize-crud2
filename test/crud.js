@@ -6,14 +6,13 @@ const Code = require('code');
 const Hapi = require('hapi');
 const HttpStatus = require('http-status-codes');
 const Lab = require('lab');
+const QS = require('qs');
 
 const mocks = require('./mocks');
 const snakeCase = require('snake-case');
 const lab = exports.lab = Lab.script();
 const expect = Code.expect;
 const before = lab.before;
-const beforeEach = lab.beforeEach;
-const afterEach = lab.afterEach;
 const describe = lab.describe;
 const it = lab.it;
 
@@ -49,8 +48,8 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
 
   it('should retrieve a list of models', () => {
   	return server.inject({ url: baseUrl })
-    	.then(res => {
-      	expect(res.statusCode).to.equal(200);
+      .then(res => {
+      	expect(res.statusCode).to.equal(HttpStatus.OK);
 
       	const data = JSON.parse(res.payload)
       	, expected = instances.map(i => i.toJSON());
@@ -61,11 +60,46 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
   });
 
   it('should filter the retrieved list of models by given querystring parameters', () => {
+    const params = {
+      filter: {
+        inventory: 0
+      }
+    };
 
+    const querystring = QS.stringify(params);
+
+    let data;
+
+    return server.inject({ url: `${baseUrl}?${querystring}` })
+      .then(res => {
+        expect(res.statusCode).to.equal(HttpStatus.OK);
+
+        data = JSON.parse(res.payload);
+
+        return Product.get({ where: params.filter });
+      })
+      .then(results => {
+        expect(results).to.be.an.array();
+        expect(results).to.only.deep.include(data);
+      });
   });
 
   it('should restrict the retrieved list of models by given offset and limit parameters', () => {
+    const offset = 2,
+      limit = 1;
 
+    return server.inject({ url: `${baseUrl}?offset=${offset}&limit=${limit}` })
+      .then(res => {
+        expect(res.statusCode).to.equal(HttpStatus.OK);
+
+        const data = JSON.parse(res.payload),
+          startIndex = offset - 1,
+          endIndex = startIndex + limit,
+          expected = instances.slice(startIndex, endIndex).map(i => i.toJSON());
+
+        expect(data).to.be.an.array();
+        expect(data).to.only.deep.include(expected);
+      });
   });
 
   it('should retrieve a count of models', () => {
@@ -93,7 +127,19 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
   });
 
   it('should include given related models with a single instance', () => {
+    const model = instances[0]
+    , related = model.category;
 
+    return server.inject({ url: `${baseUrl}/${model.id}` })
+      .then(res => {
+        expect(res.statusCode).to.equal(HttpStatus.OK);
+
+        const data = JSON.parse(res.payload)
+        , expected = Object.assign(model.get(), { category: related.get() });
+
+        expect(data).to.be.an.object();
+        expect(data).to.deep.equal(expected);
+      });
   });
 
   it('should retrieve a list of models by defined scope', () => {
@@ -112,7 +158,7 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
       });
   });
 
-  it('should return a Bad Request error for undefined scope', {} => {
+  it('should return a Bad Request error for undefined scope', () => {
     return server.inject({ url: `${baseUrl}/s/lies` })
       .then(res => {
         expect(res.statusCode).to.equal(HttpStatus.BAD_REQUEST);
