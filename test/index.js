@@ -65,7 +65,7 @@ describe('hapi-sequelize-crud2', () => {
     const plugin = {
       register: require('hapi-sequelize'),
       options: {
-        models: 'test/models/**/*.js',
+        models: 'test/server/models/**/*.js',
         sequelize: {
           dialect: 'sqlite',
           define: {

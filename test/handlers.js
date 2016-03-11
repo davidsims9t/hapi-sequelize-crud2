@@ -22,7 +22,7 @@ const describe = lab.describe;
 const it = lab.it;
 
 const internals = {
-  handlerFile: 'test/handlers/productCategory.{ts}.js',
+  handlerFile: 'test/server/handlers/productCategory.{ts}.js',
   currentHandlerFile: null
 };
 
@@ -30,7 +30,7 @@ internals.plugin = () => {
   return {
     register: require('../build'),
     options: {
-      handlers: 'test/handlers/**/*.js'
+      handlers: 'test/server/handlers/**/*.js'
     }
   };
 };
@@ -70,7 +70,7 @@ describe('hapi-sequelize-crud2 route handler overrides', () => {
     const plugin = {
       register: require('hapi-sequelize'),
       options: {
-        models: 'test/models/**/*.js',
+        models: 'test/server/models/**/*.js',
         sequelize: {
           dialect: 'sqlite',
           define: {
