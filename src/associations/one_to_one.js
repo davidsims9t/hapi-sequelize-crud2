@@ -58,7 +58,7 @@ export const index = methods.index = (server, model, association, options) => {
 export const create = methods.create = (server, model, association, options) => {
   const route = Hoek.applyToDefaults({
     method: 'POST',
-    path: `${prefix}/${model._plural}/{id}/${association._singular}`,
+    path: `${prefix}/${model._plural}/{aid}/${association._singular}`,
 
     @error
     async handler(request, reply) {
@@ -90,7 +90,7 @@ export const update = methods.update = (server, model, association, options) => 
         return reply(Boom.notFound());
       }
 
-      const result = await instance[association.accessor.set](request.params.bid);
+      const result = await instance[association.accessors.set](request.params.bid);
 
       reply(result);
     }
@@ -112,7 +112,7 @@ export const destroy = methods.destroy = (server, model, association, options) =
         return reply(Boom.notFound());
       }
 
-      const result = await instanceA[association.accessor.set](null);
+      const result = await instance[association.accessors.set](null);
 
       reply(result);
     }
