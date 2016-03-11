@@ -44,7 +44,7 @@ export const index = methods.index = (server, model, association, options) => {
         return reply(Boom.notFound());
       }
 
-      const { include } = queryParams(request)
+      const { include } = queryParams(server, request);
 
       const result = await instance[association.accessors.get]({ include });
 

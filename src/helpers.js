@@ -1,9 +1,9 @@
-import Joi from 'joi';
+const Joi = require('joi');
 
 export const validation = {
   id: Joi.number().integer().min(1).required(),
-  limit: Joi.number().integer().min(0).default(0, 'results offset'),
-  offset: Joi.number().integer().min(1).default(20, 'number of results per set'),
+  offset: Joi.number().integer().min(0).default(0, 'results offset'),
+  limit: Joi.number().integer().min(1).default(20, 'number of results per set'),
 
   include(model) {
     return Joi.string();
@@ -14,13 +14,14 @@ export const validation = {
   }
 }
 
-export const queryParams = (request) => {
+export const queryParams = (server, request) => {
   const q = request.query;
+  const models = server.plugins['hapi-sequelize'].db.sequelize.models;
 
   return {
-    where: q.filter,
+    where: q.filter || {},
     offset: q.offset,
     limit: q.limit,
-    include: q.include ? [request.models[q.include]] : []
+    include: q.include ? [models[q.include]] : []
   };
 }

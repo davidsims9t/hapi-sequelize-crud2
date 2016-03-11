@@ -52,7 +52,7 @@ export const index = methods.index = (server, model, association, options) => {
         return reply(Boom.notFound());
       }
 
-      const { where, offset, limit, include } = queryParams(request);
+      const { where, offset, limit, include } = queryParams(server, request);
 
       const result = await instance[association.accessors.get]({
         where,
@@ -248,7 +248,7 @@ export const count = methods.count = (server, model, association, options) => {
         return reply(Boom.notFound());
       }
 
-      const { where } = queryParams(request);
+      const { where } = queryParams(server, request);
 
       const count = await instance[association.accessors.count]({ where });
 

@@ -41,9 +41,7 @@ export const index = methods.index = (server, model, options) => {
 
     @error
     async handler(request, reply) {
-      console.log(queryParams(request));
-
-      const { where, offset, limit, include } = queryParams(request);
+      const { where, offset, limit, include } = queryParams(server, request);
 
       for (const key of Object.keys(where)) {
         try {
@@ -81,7 +79,7 @@ export const get = methods.get = (server, model, options) => {
 
     @error
     async handler(request, reply) {
-      const { include } = queryParams(request);
+      const { include } = queryParams(server, request);
 
       const instance = await model.findById(request.params.id, { include });
 
@@ -115,7 +113,7 @@ export const scope = methods.scope = (server, model, options) => {
 
     @error
     async handler(request, reply) {
-      const { where, offset, limit, include } = queryParams(request);
+      const { where, offset, limit, include } = queryParams(server, request);
 
       for (const key of Object.keys(where)) {
         try {
@@ -228,7 +226,7 @@ export const count = methods.count = (server, model, options) => {
 
     @error
     async handler(request, reply) {
-      const { where } = queryParams(request);
+      const { where } = queryParams(server, request);
 
       const count = await model.count({ where });
 

@@ -4,11 +4,12 @@ require('babel-polyfill');
 
 const Code = require('code');
 const Hapi = require('hapi');
+const Hoek = require('hoek');
 const HttpStatus = require('http-status-codes');
 const Lab = require('lab');
+const Mocks = require('./mocks');
 const QS = require('qs');
 
-const mocks = require('./mocks');
 const snakeCase = require('snake-case');
 const lab = exports.lab = Lab.script();
 const expect = Code.expect;
@@ -43,17 +44,31 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
         baseUrl = `/${Product.options.name.plural}`;
 
         return db.sync({ force: true });
+      })
+      .then(() => {
+        const ProductCategory = db.models.productCategory;
+
+        return Promise.all([
+          Product.create(Mocks.product()),
+          Product.create(Mocks.product()),
+          Product.create(Hoek.applyToDefaults(Mocks.product(), { inventory: 0 })),
+          ProductCategory.create(Mocks.productCategory())
+        ]);
+      })
+      .then(models => {
+        instances = models.slice(0, 3);
+        instance = instances[0];
+        instance.setProductCategory(models[3]);
       });
   });
 
   it('should retrieve a list of models', () => {
-  	return server.inject({ url: baseUrl })
+    return server.inject({ url: baseUrl })
       .then(res => {
-      	expect(res.statusCode).to.equal(HttpStatus.OK);
-
-      	const data = JSON.parse(res.payload)
+        const data = JSON.parse(res.payload)
       	, expected = instances.map(i => i.toJSON());
 
+      	expect(res.statusCode).to.equal(HttpStatus.OK);
       	expect(data).to.be.an.array();
       	expect(data).to.only.deep.include(expected);
     	});
@@ -62,7 +77,7 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
   it('should filter the retrieved list of models by given querystring parameters', () => {
     const params = {
       filter: {
-        inventory: 0
+        inventory: instance.inventory
       }
     };
 
@@ -72,15 +87,18 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
 
     return server.inject({ url: `${baseUrl}?${querystring}` })
       .then(res => {
-        expect(res.statusCode).to.equal(HttpStatus.OK);
-
         data = JSON.parse(res.payload);
 
-        return Product.get({ where: params.filter });
+        expect(res.statusCode).to.equal(HttpStatus.OK);
+
+        return Product.findAll({ where: params.filter });
       })
       .then(results => {
         expect(results).to.be.an.array();
-        expect(results).to.only.deep.include(data);
+
+        const expected = results.map(i => i.toJSON());
+
+        expect(data).to.only.deep.include(expected);
       });
   });
 
@@ -93,7 +111,7 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
         expect(res.statusCode).to.equal(HttpStatus.OK);
 
         const data = JSON.parse(res.payload),
-          startIndex = offset - 1,
+          startIndex = offset,
           endIndex = startIndex + limit,
           expected = instances.slice(startIndex, endIndex).map(i => i.toJSON());
 
@@ -127,16 +145,21 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
   });
 
   it('should include given related models with a single instance', () => {
-    const model = instances[0]
-    , related = model.category;
+    const model = instances[0];
 
-    return server.inject({ url: `${baseUrl}/${model.id}` })
+    let related;
+
+    return model.getProductCategory()
+      .then(result => {
+        related = result;
+
+        return server.inject({ url: `${baseUrl}/${model.id}?include=productCategory` });
+      })
       .then(res => {
-        expect(res.statusCode).to.equal(HttpStatus.OK);
-
         const data = JSON.parse(res.payload)
-        , expected = Object.assign(model.get(), { category: related.get() });
+        , expected = Object.assign(model.get(), { productCategory: related.get() });
 
+        expect(res.statusCode).to.equal(HttpStatus.OK);
         expect(data).to.be.an.object();
         expect(data).to.deep.equal(expected);
       });
@@ -145,12 +168,12 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
   it('should retrieve a list of models by defined scope', () => {
     return server.inject({ url: `${baseUrl}/s/outOfStock` })
       .then(res => {
-        expect(res.statusCode).to.equal(HttpStatus.OK);
-
         const data = JSON.parse(res.payload)
         , expected = instances.filter(i => i.inventory === 0)
                               .map(i => i.toJSON())
         ;
+
+        expect(res.statusCode).to.equal(HttpStatus.OK);
 
         expect(data).to.be.an.array()
                     .and.to.only.deep.include(expected)
@@ -166,19 +189,13 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
   });
 
   it('should create a single new model instance', () => {
-    const newAttributes = {
-      name: 'new product test',
-      inventory: 42
-    };
-
     let data;
 
-    return server.inject({ url: baseUrl, method: 'POST', payload: newAttributes })
+    return server.inject({ url: baseUrl, method: 'POST', payload: Mocks.product() })
       .then(res => {
-        expect(res.statusCode).to.equal(HttpStatus.OK);
-
         data = JSON.parse(res.payload);
 
+        expect(res.statusCode).to.equal(HttpStatus.OK);
         expect(data).to.be.an.object()
                     .and.to.include('id');
 
@@ -219,15 +236,14 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
   it('should destroy a single model instance', () => {
     return server.inject({ url: `${baseUrl}/${instance.id}`, method: 'DELETE'})
       .then(res => {
-        expect(res.statusCode).to.equal(HttpStatus.OK);
+        const data = JSON.parse(res.payload);
 
-        data = JSON.parse(res.payload);
-        console.log(data);
+        expect(res.statusCode).to.equal(HttpStatus.OK);
 
         return Product.findById(instance.id);
       })
-      .then(instance => {
-        expect(instance).to.be.null();
+      .then(oldInstance => {
+        expect(oldInstance).to.be.null();
 
         return server.inject({ url: `${baseUrl}/${instance.id}` });
       }).then(res => {
