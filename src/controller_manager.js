@@ -3,7 +3,7 @@ import Path from 'path';
 import camelCase from 'camel-case';
 
 const internals = {
-  handlers: {}
+  controllers: {}
 };
 
 internals.getFiles = (patterns) => {
@@ -16,11 +16,11 @@ internals.getFiles = (patterns) => {
   }, []);
 };
 
-exports.handlerOptions = function (modelName) {
-  return internals.handlers.hasOwnProperty(modelName) ? internals.handlers[modelName] : {};
+exports.controllerOptions = function (modelName) {
+  return internals.controllers.hasOwnProperty(modelName) ? internals.controllers[modelName] : {};
 }
 
-exports.loadHandlers = function(server, patterns) {
+exports.loadControllers = function(server, patterns) {
   const models = server.plugins['hapi-sequelize'].db.sequelize.models;
 
   internals.getFiles(patterns).forEach(f => {
@@ -31,26 +31,26 @@ exports.loadHandlers = function(server, patterns) {
                       ? name
                       : camelCase(name);
 
-    internals.handlers[modelName] = require(fileName)(server, models[modelName]);
+    internals.controllers[modelName] = require(fileName)(server, models[modelName]);
   });
 
   return this;
 };
 
-exports.handlersEnabled = function (modelName) {
-  const opts = this.handlerOptions(modelName);
+exports.controllersEnabled = function (modelName) {
+  const opts = this.controllerOptions(modelName);
 
   return ! opts.hasOwnProperty('*') || !! opts['*'];
 }
 
 exports.associationsEnabled = function (modelName) {
-  const opts = this.handlerOptions(modelName);
+  const opts = this.controllerOptions(modelName);
 
   return ! opts.hasOwnProperty('associations') || !! opts.associations;
 }
 
 exports.associationEnabled = function (modelName, associationKey) {
-  const opts = this.handlerOptions(modelName);
+  const opts = this.controllerOptions(modelName);
 
   return ! opts.hasOwnProperty('associations')
           || ! opts.associations.hasOwnProperty(associationKey)

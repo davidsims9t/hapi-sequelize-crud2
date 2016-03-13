@@ -6,7 +6,7 @@ import { queryParams, validation } from '../helpers'
 
 let prefix;
 
-const defaultHandlerOptions = {
+const defaultControllerOptions = {
   index: true,
   create: true,
   update: true,
@@ -18,10 +18,10 @@ const methods = {};
 export default (server, model, association, options) => {
   prefix = options.prefix;
 
-  const handlerOptions = Hoek.applyToDefaults(defaultHandlerOptions, options.handlerOptions);
+  const controllerOptions = Hoek.applyToDefaults(defaultControllerOptions, options.controllerOptions);
 
   for (const method in methods) {
-    let methodOpts = handlerOptions[method];
+    let methodOpts = controllerOptions[method];
 
     if (!! methodOpts) {
       methodOpts = typeof methodOpts === 'object' ? methodOpts : {};

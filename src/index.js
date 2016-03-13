@@ -1,8 +1,8 @@
+import ControllerManager from './controller_manager';
 import Fs from 'fs';
 import Hoek from 'hoek';
 import URL from 'url';
 import QS from 'qs';
-import Handlers from './handlers';
 import crud, { associations } from './crud';
 import snakeCase from 'snake-case';
 
@@ -22,7 +22,7 @@ internals.optionDefaults = {
   scopePrefix: 's',
   snakeCase: false,
   private: [],
-  handlers: 'handlers/**/*.js'
+  controllers: 'controllers/**/*.js'
 };
 
 exports.register = (server, options = {}, next) => {
@@ -33,7 +33,7 @@ exports.register = (server, options = {}, next) => {
   const modelNames = Object.keys(models).filter(m => options.private.indexOf(m) === -1);
   const convertCase = options.snakeCase ? snakeCase : function (str) { return str; };
 
-  Handlers.loadHandlers(server, options.handlers);
+  ControllerManager.loadControllers(server, options.controllers);
 
   server.ext({
     type: 'onRequest',
@@ -41,7 +41,7 @@ exports.register = (server, options = {}, next) => {
   });
 
   for (const modelName of modelNames) {
-    if (! Handlers.handlersEnabled(modelName)) {
+    if (! ControllerManager.controllersEnabled(modelName)) {
       continue;
     }
 
@@ -55,16 +55,16 @@ exports.register = (server, options = {}, next) => {
       continue;
     }
 
-    options.handlerOptions = Handlers.handlerOptions(modelName);
+    options.controllerOptions = ControllerManager.controllerOptions(modelName);
 
     crud(server, model, options);
 
-    if (! Handlers.associationsEnabled(modelName)) {
+    if (! ControllerManager.associationsEnabled(modelName)) {
       continue;
     }
 
     for (const key of Object.keys(model.associations)) {
-      if (! Handlers.associationEnabled(modelName, key)) {
+      if (! ControllerManager.associationEnabled(modelName, key)) {
         continue;
       }
 

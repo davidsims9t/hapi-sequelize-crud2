@@ -6,7 +6,7 @@ import { queryParams, validation } from '../helpers';
 
 let prefix, scopePrefix;
 
-const defaultHandlerOptions = {
+const defaultControllerOptions = {
   index: true,
   create: true,
   update: true,
@@ -22,14 +22,14 @@ export default (server, model, association, options) => {
   prefix = options.prefix;
   scopePrefix = options.scopePrefix;
 
-  const associationOptions = options.handlerOptions.associations && options.handlerOptions.associations[association._plural]
-                              ? options.handlerOptions.associations[association._plural]
+  const associationOptions = options.controllerOptions.associations && options.controllerOptions.associations[association._plural]
+                              ? options.controllerOptions.associations[association._plural]
                               : {}
   ;
-  const handlerOptions = Hoek.applyToDefaults(defaultHandlerOptions, associationOptions);
+  const controllerOptions = Hoek.applyToDefaults(defaultControllerOptions, associationOptions);
 
   for (const method in methods) {
-    let methodOpts = handlerOptions[method];
+    let methodOpts = controllerOptions[method];
 
     if (!! methodOpts) {
       methodOpts = typeof methodOpts === 'object' ? methodOpts : {};

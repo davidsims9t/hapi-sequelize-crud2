@@ -9,7 +9,8 @@
     }
   },
   "scripts": {
-    "test": "lab -r console -o stdout -r html -o test/coverage.html -I core,Reflect,__core-js_shared__,System,_babelPolyfill,regeneratorRuntime"
+    "test": "lab -r console -o stdout -r html -o test/coverage.html -I core,Reflect,__core-js_shared__,System,_babelPolyfill,regeneratorRuntime",
+    "clean": "rm -rf build/*"
   },
   "repository": {
     "git": "https://github.com/alexanderreiff/hapi-sequelize-crud"

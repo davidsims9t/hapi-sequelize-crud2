@@ -9,7 +9,6 @@ const HttpStatus = require('http-status-codes');
 const Lab = require('lab');
 const QS = require('qs');
 
-const mocks = require('./mocks');
 const routesToStrings = require('./helpers').routesToStrings;
 const snakeCase = require('snake-case');
 const lab = exports.lab = Lab.script();
@@ -22,30 +21,30 @@ const describe = lab.describe;
 const it = lab.it;
 
 const internals = {
-  handlerFile: 'test/server/handlers/productCategory.{ts}.js',
-  currentHandlerFile: null
+  controllerFile: 'test/server/controllers/productCategory.{ts}.js',
+  currentControllerFile: null
 };
 
 internals.plugin = () => {
   return {
     register: require('../build'),
     options: {
-      handlers: 'test/server/handlers/**/*.js'
+      controllers: 'test/server/controllers/**/*.js'
     }
   };
 };
 
-internals.removeHandler = function() {
-  if (internals.currentHandlerFile) {
+internals.removeController = function() {
+  if (internals.currentControllerFile) {
     try {
-      FS.unlinkSync(this.currentHandlerFile);
+      FS.unlinkSync(this.currentControllerFile);
     } catch (e) {
     }
   }
 };
 
-internals.writeHandler = function(def, snakeCase) {
-  const filename = (snakeCase ? snakeCase(this.handlerFile) : this.handlerFile).replace('{ts}', Date.now());
+internals.writeController = function(def, snakeCase) {
+  const filename = (snakeCase ? snakeCase(this.controllerFile) : this.controllerFile).replace('{ts}', Date.now());
 
   if (typeof def === 'object') {
     def = JSON.stringify(def);
@@ -55,14 +54,14 @@ internals.writeHandler = function(def, snakeCase) {
 
   FS.writeFileSync(filename, file);
 
-  internals.currentHandlerFile = filename;
+  internals.currentControllerFile = filename;
 }
 
-describe('hapi-sequelize-crud2 route handler overrides', () => {
+describe('hapi-sequelize-crud2 route controller overrides', () => {
   let server, db;
 
   beforeEach({ timeout: 5000 }, () => {
-    internals.removeHandler();
+    internals.removeController();
 
     server = new Hapi.Server();
     server.connection();
@@ -89,13 +88,13 @@ describe('hapi-sequelize-crud2 route handler overrides', () => {
   });
 
   after(() => {
-    internals.removeHandler();
+    internals.removeController();
 
     return Promise.resolve();
   });
 
   it('should be able to deactivate all routes for a model', () => {
-    internals.writeHandler({ '*': false });
+    internals.writeController({ '*': false });
 
     return server.register([internals.plugin()])
       .then(() => {
@@ -113,7 +112,7 @@ describe('hapi-sequelize-crud2 route handler overrides', () => {
   });
 
   it('should be able to deactivate individual CRUD routes for a model', () => {
-    internals.writeHandler({ update: false, destroy: false });
+    internals.writeController({ update: false, destroy: false });
 
     return server.register([internals.plugin()])
       .then(() => {
@@ -134,7 +133,7 @@ describe('hapi-sequelize-crud2 route handler overrides', () => {
   });
 
   it('should be able to deactivate all association routes for a model', () => {
-    internals.writeHandler({ associations: false });
+    internals.writeController({ associations: false });
 
     return server.register([internals.plugin()])
       .then(() => {
@@ -161,7 +160,7 @@ describe('hapi-sequelize-crud2 route handler overrides', () => {
   });
 
   it('should be able to deactivate all routes for an individual model association', () => {
-    internals.writeHandler({
+    internals.writeController({
       associations: {
         tags: false
       }
@@ -194,7 +193,7 @@ describe('hapi-sequelize-crud2 route handler overrides', () => {
   });
 
   it('should be able to deactivate individual routes for an individual model association', () => {
-    internals.writeHandler({
+    internals.writeController({
       associations: {
         tags: {
           update: false,
@@ -232,8 +231,8 @@ describe('hapi-sequelize-crud2 route handler overrides', () => {
       });
   });
 
-  it('should be able to override handler logic for individual CRUD routes', () => {
-    internals.writeHandler('{ count: { handler: function(server, reply) { reply({ count: null }); } } }');
+  it('should be able to override controller logic for individual CRUD routes', () => {
+    internals.writeController('{ count: { handler: function(server, reply) { reply({ count: null }); } } }');
 
     return server.register([internals.plugin()])
       .then(() => {
