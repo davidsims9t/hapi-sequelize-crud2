@@ -21,8 +21,9 @@ const describe = lab.describe;
 const it = lab.it;
 
 const internals = {
-  controllerFile: 'test/server/controllers/productCategory.{ts}.js',
-  currentControllerFile: null
+  controllerFile: 'test/server/controllers/productCategory.{i}.js',
+  currentControllerFile: null,
+  iteration: 0
 };
 
 internals.plugin = () => {
@@ -41,10 +42,11 @@ internals.removeController = function() {
     } catch (e) {
     }
   }
+  ++internals.iteration;
 };
 
 internals.writeController = function(def, snakeCase) {
-  const filename = (snakeCase ? snakeCase(this.controllerFile) : this.controllerFile).replace('{ts}', Date.now());
+  const filename = (snakeCase ? snakeCase(this.controllerFile) : this.controllerFile).replace('{i}', internals.iteration);
 
   if (typeof def === 'object') {
     def = JSON.stringify(def);

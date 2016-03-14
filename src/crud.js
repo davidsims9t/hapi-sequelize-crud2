@@ -4,9 +4,9 @@ import Joi from 'joi';
 import error from './error';
 import { queryParams, validation } from './helpers';
 
-let prefix, scopePrefix, handlerOptions;
+let prefix, scopePrefix, controllerOptions;
 
-const defaultHandlerOptions = {
+const defaultControllerOptions = {
   index: true,
   get: true,
   count: true,
@@ -21,10 +21,10 @@ const methods = {};
 export default (server, model, options) => {
   prefix = options.prefix,
   scopePrefix = options.scopePrefix,
-  handlerOptions = Hoek.applyToDefaults(defaultHandlerOptions, options.handlerOptions || {});
+  controllerOptions = Hoek.applyToDefaults(defaultControllerOptions, options.controllerOptions || {});
 
   for (const method in methods) {
-    let methodOpts = handlerOptions[method];
+    let methodOpts = controllerOptions[method];
 
     if (!! methodOpts) {
       methodOpts = typeof methodOpts === 'object' ? methodOpts : {};
