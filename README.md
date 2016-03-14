@@ -83,7 +83,9 @@ And these one-to-many association routes:
 | GET | `/teams/{id}/roles/count` | count<sup>1</sup> | Counts the number of associated models |
 
 <sup>1</sup> Accepts a query string parameter object `filter` to limit results by given criteria, e.g. `?filter[status]=active`
+
 <sup>2</sup> Accepts query string parameters `limit` and `offset` to control paginated results
+
 <sup>3</sup> Accepts a querystring parameter `include` to include a related model with the returned parent model
 
 ##Custom Route Configuration
