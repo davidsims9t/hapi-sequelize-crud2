@@ -202,6 +202,20 @@ describe('hapi-sequelize-crud2 one-to-many associations REST interface', () => {
   });
 
   it('should unset a single model association', () => {
-    const tag = tags[0];
+    const tag = testTags[0];
+
+    return server.inject({ url: `${baseUrl}/${tag.id}`, method: 'DELETE' })
+      .then(res => {
+        expect(res.statusCode).to.equal(HttpStatus.OK);
+
+        return testProduct.getTags();
+      })
+      .then(results => {
+        const resultsSimple = results.map(i => i.toJSON()).map(internals.removePivot);
+        const expected = tag.toJSON();
+
+        expect(resultsSimple).to.be.an.array()
+                             .and.to.not.deep.include(expected);
+      });
   });
 });
