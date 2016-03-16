@@ -36,22 +36,22 @@ const expectScopeRoutes = (routes, modelName, prefix) => {
 
 const expectOneToOneRoutes = (routes, modelName, associationName) => {
   expect(routes).to.include([
-    `/${modelName}/{aid}/${associationName}|get`,
-    `/${modelName}/{aid}/${associationName}|post`,
-    `/${modelName}/{aid}/${associationName}/{bid}|put`,
-    `/${modelName}/{aid}/${associationName}/{bid}|delete`
+    `/${modelName}/{id}/${associationName}|get`,
+    `/${modelName}/{id}/${associationName}|post`,
+    `/${modelName}/{id}/${associationName}/{aid}|put`,
+    `/${modelName}/{id}/${associationName}/{aid}|delete`
   ]);
 }
 
 const expectOneToManyRoutes = (routes, modelName, associationName) => {
   expect(routes).to.include([
-    `/${modelName}/{aid}/${associationName}|get`,
-    `/${modelName}/{aid}/${associationName}|post`
-    `/${modelName}/{aid}/${associationName}|put`,
-    `/${modelName}/{aid}/${associationName}/{bid}|put`,
-    `/${modelName}/{aid}/${associationName}|delete`,
-    `/${modelName}/{aid}/${associationName}/{bid}|delete`,
-    `/${modelName}/{aid}/${associationName}/count|get`
+    `/${modelName}/{id}/${associationName}|get`,
+    `/${modelName}/{id}/${associationName}|post`
+    `/${modelName}/{id}/${associationName}|put`,
+    `/${modelName}/{id}/${associationName}/{aid}|put`,
+    `/${modelName}/{id}/${associationName}|delete`,
+    `/${modelName}/{id}/${associationName}/{aid}|delete`,
+    `/${modelName}/{id}/${associationName}/count|get`
   ]);
 }
 

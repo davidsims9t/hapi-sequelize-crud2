@@ -142,21 +142,21 @@ describe('hapi-sequelize-crud2 route controller overrides', () => {
         const routes = routesToStrings(server);
 
         expect(routes).to.not.include([
-          `/productCategories/{aid}/products|get`,
-          `/productCategories/{aid}/products|post`,
-          `/productCategories/{aid}/products|put`,
-          `/productCategories/{aid}/products/{bid}|put`,
-          `/productCategories/{aid}/products|delete`,
-          `/productCategories/{aid}/products/{bid}|delete`,
-          `/productCategories/{aid}/products/count|get`,
+          `/productCategories/{id}/products|get`,
+          `/productCategories/{id}/products|post`,
+          `/productCategories/{id}/products|put`,
+          `/productCategories/{id}/products/{aid}|put`,
+          `/productCategories/{id}/products|delete`,
+          `/productCategories/{id}/products/{aid}|delete`,
+          `/productCategories/{id}/products/count|get`,
 
-          `/productCategories/{aid}/tags|get`,
-          `/productCategories/{aid}/tags|post`,
-          `/productCategories/{aid}/tags|put`,
-          `/productCategories/{aid}/tags/{bid}|put`,
-          `/productCategories/{aid}/tags|delete`,
-          `/productCategories/{aid}/tags/{bid}|delete`,
-          `/productCategories/{aid}/tags/count|get`
+          `/productCategories/{id}/tags|get`,
+          `/productCategories/{id}/tags|post`,
+          `/productCategories/{id}/tags|put`,
+          `/productCategories/{id}/tags/{aid}|put`,
+          `/productCategories/{id}/tags|delete`,
+          `/productCategories/{id}/tags/{aid}|delete`,
+          `/productCategories/{id}/tags/count|get`
         ]);
       });
   });
@@ -173,23 +173,23 @@ describe('hapi-sequelize-crud2 route controller overrides', () => {
         const routes = routesToStrings(server);
 
         expect(routes).to.include([
-          `/productCategories/{aid}/products|get`,
-          `/productCategories/{aid}/products|post`,
-          `/productCategories/{aid}/products|put`,
-          `/productCategories/{aid}/products/{bid}|put`,
-          `/productCategories/{aid}/products|delete`,
-          `/productCategories/{aid}/products/{bid}|delete`,
-          `/productCategories/{aid}/products/count|get`
+          `/productCategories/{id}/products|get`,
+          `/productCategories/{id}/products|post`,
+          `/productCategories/{id}/products|put`,
+          `/productCategories/{id}/products/{aid}|put`,
+          `/productCategories/{id}/products|delete`,
+          `/productCategories/{id}/products/{aid}|delete`,
+          `/productCategories/{id}/products/count|get`
         ]);
 
         expect(routes).to.not.include([
-          `/productCategories/{aid}/tags|get`,
-          `/productCategories/{aid}/tags|post`,
-          `/productCategories/{aid}/tags|put`,
-          `/productCategories/{aid}/tags/{bid}|put`,
-          `/productCategories/{aid}/tags|delete`,
-          `/productCategories/{aid}/tags/{bid}|delete`,
-          `/productCategories/{aid}/tags/count|get`
+          `/productCategories/{id}/tags|get`,
+          `/productCategories/{id}/tags|post`,
+          `/productCategories/{id}/tags|put`,
+          `/productCategories/{id}/tags/{aid}|put`,
+          `/productCategories/{id}/tags|delete`,
+          `/productCategories/{id}/tags/{aid}|delete`,
+          `/productCategories/{id}/tags/count|get`
         ]);
       });
   });
@@ -211,24 +211,24 @@ describe('hapi-sequelize-crud2 route controller overrides', () => {
         const routes = routesToStrings(server);
 
         expect(routes).to.include([
-          `/productCategories/{aid}/products|get`,
-          `/productCategories/{aid}/products|post`,
-          `/productCategories/{aid}/products|put`,
-          `/productCategories/{aid}/products/{bid}|put`,
-          `/productCategories/{aid}/products|delete`,
-          `/productCategories/{aid}/products/{bid}|delete`,
-          `/productCategories/{aid}/products/count|get`,
+          `/productCategories/{id}/products|get`,
+          `/productCategories/{id}/products|post`,
+          `/productCategories/{id}/products|put`,
+          `/productCategories/{id}/products/{aid}|put`,
+          `/productCategories/{id}/products|delete`,
+          `/productCategories/{id}/products/{aid}|delete`,
+          `/productCategories/{id}/products/count|get`,
 
-          `/productCategories/{aid}/tags|get`,
-          `/productCategories/{aid}/tags|post`,
-          `/productCategories/{aid}/tags/count|get`
+          `/productCategories/{id}/tags|get`,
+          `/productCategories/{id}/tags|post`,
+          `/productCategories/{id}/tags/count|get`
         ]);
 
         expect(routes).to.not.include([
-          `/productCategories/{aid}/tags|put`,
-          `/productCategories/{aid}/tags/{bid}|put`,
-          `/productCategories/{aid}/tags|delete`,
-          `/productCategories/{aid}/tags/{bid}|delete`
+          `/productCategories/{id}/tags|put`,
+          `/productCategories/{id}/tags/{aid}|put`,
+          `/productCategories/{id}/tags|delete`,
+          `/productCategories/{id}/tags/{aid}|delete`
         ]);
       });
   });

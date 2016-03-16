@@ -2,7 +2,7 @@ import Boom from 'boom';
 import Hoek from 'hoek';
 import Joi from 'joi';
 import error from '../error';
-import { queryParams, validation } from '../helpers';
+import { getModel, queryParams, validation } from '../helpers';
 
 let prefix, scopePrefix;
 
@@ -42,11 +42,11 @@ export default (server, model, association, options) => {
 export const index = methods.index = (server, model, association, options) => {
   const route = Hoek.applyToDefaults({
     method: 'GET',
-    path: `${prefix}/${model._plural}/{aid}/${association._plural}`,
+    path: `${prefix}/${model._plural}/{id}/${association._plural}`,
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.aid);
+      const instance = await getModel(request, model);
 
       if (!instance) {
         return reply(Boom.notFound());
@@ -66,7 +66,7 @@ export const index = methods.index = (server, model, association, options) => {
     config: {
       validate: {
         params: {
-          aid: Joi.number().integer()
+          id: Joi.number().integer()
         },
         query: {
           filter: validation.filter(association.target),
@@ -84,11 +84,11 @@ export const index = methods.index = (server, model, association, options) => {
 export const create = methods.create = (server, model, association, options) => {
   const route = Hoek.applyToDefaults({
     method: 'POST',
-    path: `${prefix}/${model._plural}/{aid}/${association._plural}`,
+    path: `${prefix}/${model._plural}/{id}/${association._plural}`,
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.aid);
+      const instance = await getModel(request, model);
 
       if (!instance) {
         return reply(Boom.notFound());
@@ -101,7 +101,7 @@ export const create = methods.create = (server, model, association, options) => 
     config: {
       validate: {
         params: {
-          aid: validation.id
+          id: validation.id
         }
       }
     }
@@ -113,25 +113,25 @@ export const create = methods.create = (server, model, association, options) => 
 export const update = methods.update = (server, model, association, options) => {
   const route = Hoek.applyToDefaults({
     method: 'PUT',
-    path: `${prefix}/${model._plural}/{aid}/${association._plural}/{bid}`,
+    path: `${prefix}/${model._plural}/{id}/${association._plural}/{aid}`,
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.aid);
+      const instance = await getModel(request, model);
 
       if (!instance) {
         return reply(Boom.notFound());
       }
 
-      const result = await instance[association.accessors.add](request.params.bid);
+      const result = await instance[association.accessors.add](request.params.aid);
 
       reply(result);
     },
     config: {
       validate: {
         params: {
-          aid: validation.id,
-          bid: validation.id
+          id: validation.id,
+          aid: validation.id
         }
       }
     }
@@ -143,11 +143,11 @@ export const update = methods.update = (server, model, association, options) => 
 export const updateMany = methods.updateMany = (server, model, association, options) => {
   const route = Hoek.applyToDefaults({
     method: 'PUT',
-    path: `${prefix}/${model._plural}/{aid}/${association._plural}`,
+    path: `${prefix}/${model._plural}/{id}/${association._plural}`,
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.aid);
+      const instance = await getModel(request, model);
 
       if (!instance) {
         return reply(Boom.notFound());
@@ -161,7 +161,7 @@ export const updateMany = methods.updateMany = (server, model, association, opti
     config: {
       validate: {
         params: {
-          aid: validation.id
+          id: validation.id
         },
         query: {
           id: Joi.array().items(validation.id).required()
@@ -176,21 +176,21 @@ export const updateMany = methods.updateMany = (server, model, association, opti
 export const destroy = methods.destroy = (server, model, association, options) => {
   const route = Hoek.applyToDefaults({
     method: 'DELETE',
-    path: `${prefix}/${model._plural}/{aid}/${association._plural}/{bid}`,
+    path: `${prefix}/${model._plural}/{id}/${association._plural}/{aid}`,
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.aid);
+      const instance = await getModel(request, model);
 
-      const result = await instance[association.accessors.remove](request.params.bid);
+      const result = await instance[association.accessors.remove](request.params.aid);
 
       reply(result);
     },
     config: {
       validate: {
         params: {
-          aid: validation.id,
-          bid: validation.id
+          id: validation.id,
+          aid: validation.id
         }
       }
     }
@@ -202,11 +202,11 @@ export const destroy = methods.destroy = (server, model, association, options) =
 export const destroyMany = methods.destroyMany = (server, model, association, options) => {
   const route = Hoek.applyToDefaults({
     method: 'DELETE',
-    path: `${prefix}/${model._plural}/{aid}/${association._plural}`,
+    path: `${prefix}/${model._plural}/{id}/${association._plural}`,
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.aid);
+      const instance = await getModel(request, model);
 
       if (!instance) {
         return reply(Boom.notFound());
@@ -223,7 +223,7 @@ export const destroyMany = methods.destroyMany = (server, model, association, op
     config: {
       validate: {
         params: {
-          aid: validation.id
+          id: validation.id
         },
         query: {
           id: Joi.array().items(validation.id).optional()
@@ -238,11 +238,11 @@ export const destroyMany = methods.destroyMany = (server, model, association, op
 export const count = methods.count = (server, model, association, options) => {
   const route = Hoek.applyToDefaults({
     method: 'GET',
-    path: `${prefix}/${model._plural}/{aid}/${association._plural}/count`,
+    path: `${prefix}/${model._plural}/{id}/${association._plural}/count`,
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.aid);
+      const instance = await getModel(request, model);
 
       if (!instance) {
         return reply(Boom.notFound());
@@ -257,7 +257,7 @@ export const count = methods.count = (server, model, association, options) => {
     config: {
       validate: {
         params: {
-          aid: validation.id
+          id: validation.id
         },
         query: {
           filter: validation.filter(model)

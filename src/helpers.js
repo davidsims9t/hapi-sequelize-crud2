@@ -1,6 +1,7 @@
 const Joi = require('joi');
 
 export const validation = {
+
   id: Joi.number().integer().min(1).required(),
   offset: Joi.number().integer().min(0).default(0, 'results offset'),
   limit: Joi.number().integer().min(1).default(20, 'number of results per set'),
@@ -15,6 +16,7 @@ export const validation = {
 }
 
 export const queryParams = (server, request) => {
+
   const q = request.query;
   const models = server.plugins['hapi-sequelize'].db.sequelize.models;
 
@@ -24,4 +26,14 @@ export const queryParams = (server, request) => {
     limit: q.limit,
     include: q.include ? [models[q.include]] : []
   };
+}
+
+export const getModel = (request, model, param) => {
+
+  param = param || 'id';
+  const id = request.params[param];
+
+  return request.pre.model
+          ? Promise.resolve(request.pre.model)
+          : model.scope(request.pre.scope).findById(id);
 }

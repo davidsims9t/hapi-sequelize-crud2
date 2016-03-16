@@ -2,7 +2,7 @@ import Boom from 'boom';
 import Hoek from 'hoek';
 import Joi from 'joi';
 import error from './error';
-import { queryParams, validation } from './helpers';
+import { getModel, queryParams, validation } from './helpers';
 
 let prefix, scopePrefix, controllerOptions;
 
@@ -51,7 +51,7 @@ export const index = methods.index = (server, model, options) => {
         }
       }
 
-      let list = await model.findAll({
+      let list = await model.scope(request.pre.scope).findAll({
         where, include, offset, limit
       });
 
@@ -81,7 +81,8 @@ export const get = methods.get = (server, model, options) => {
     async handler(request, reply) {
       const { include } = queryParams(server, request);
 
-      const instance = await model.findById(request.params.id, { include });
+      const instance = request.pre.model
+                        || await model.scope(request.pre.scope).findById(request.params.id, { include });
 
       if (!instance) {
         return reply(Boom.notFound());
@@ -123,7 +124,9 @@ export const scope = methods.scope = (server, model, options) => {
         }
       }
 
-      const list = await model.scope(request.params.scope).findAll({ include, where, offset, limit });
+      const list = await model.scope(request.pre.scope)
+                              .scope(request.params.scope)
+                              .findAll({ include, where, offset, limit });
 
       reply(list);
     },
@@ -168,7 +171,7 @@ export const update = methods.update = (server, model, options) => {
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.id);
+      const instance = await getModel(request, model);
 
       if (!instance) {
         reply(Boom.notFound());
@@ -197,7 +200,7 @@ export const destroy = methods.destroy = (server, model, options) => {
 
     @error
     async handler(request, reply) {
-      const instance = await model.findById(request.params.id);
+      const instance = await getModel(request, model);
 
       if (!instance) {
         reply(Boom.notFound());
@@ -228,7 +231,7 @@ export const count = methods.count = (server, model, options) => {
     async handler(request, reply) {
       const { where } = queryParams(server, request);
 
-      const count = await model.count({ where });
+      const count = await model.scope(request.pre.scope).count({ where });
 
       reply({ count });
     },
