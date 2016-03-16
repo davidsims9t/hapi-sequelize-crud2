@@ -1,4 +1,5 @@
 import Glob from 'glob';
+import Hoek from 'hoek';
 import Path from 'path';
 import camelCase from 'camel-case';
 
@@ -17,7 +18,16 @@ internals.getFiles = (patterns) => {
 };
 
 exports.controllerOptions = function (modelName) {
-  return internals.controllers.hasOwnProperty(modelName) ? internals.controllers[modelName] : {};
+
+  const defaultCtrl = arguments.length === 1 // Pass a second argument to avoid infinite recursion
+                      ? this.controllerOptions('_default', true)
+                      : {};
+
+  const modelCtrl = internals.controllers.hasOwnProperty(modelName)
+                      ? internals.controllers[modelName]
+                      : {};
+
+  return Hoek.applyToDefaults(defaultCtrl, modelCtrl);
 }
 
 exports.loadControllers = function(server, patterns) {
@@ -27,7 +37,7 @@ exports.loadControllers = function(server, patterns) {
     const pathInfo = Path.parse(f);
     const fileName = Path.resolve('.', pathInfo.dir, pathInfo.base);
     const name = pathInfo.name.replace(/\..+$/, ''); // enables adding suffix for testing, e.g. modelName.timestamp.js
-    const modelName = name.indexOf('_') !== -1
+    const modelName = name.indexOf('_') < 1 // -1 or 0 match
                       ? name
                       : camelCase(name);
 
