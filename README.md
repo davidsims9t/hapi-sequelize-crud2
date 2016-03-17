@@ -158,3 +158,7 @@ modules.export = function(server, Team) {
   };
 });
 ```
+
+Include a default configuration to apply to all routes in a controller by setting the `*` key. 
+Apply only to all association routes by setting `associations.*`. To set a default controller,
+include a `_default.js` file in your controllers file path.
