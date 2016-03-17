@@ -238,6 +238,7 @@ describe('hapi-sequelize-crud2 route controller overrides', () => {
   });
 
   it('should be able to deactivate an individual route for all model associations', () => {
+
     internals.writeController({
       associations: {
         '*': {
@@ -259,7 +260,7 @@ describe('hapi-sequelize-crud2 route controller overrides', () => {
   it('should be able to override individual controller logic for an individual model association', () => {
     internals.writeController('{ associations: { tags: { count: { handler: function(server, reply) { reply({ count: null }); } } } } }');
 
-      return server.register([internals.plugin()])
+    return server.register([internals.plugin()])
       .then(() => {
         return server.inject({ url: '/productCategories/1/tags/count' });
       })

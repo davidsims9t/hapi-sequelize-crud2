@@ -45,8 +45,15 @@ exports.pluckAssociationOptions = function(options, association, methods) {
     for (const method of methods) {
       const methodOpts = associationOpts.hasOwnProperty(method) ? associationOpts[method] : {};
 
-      if (methodOpts !== false) {
-          associationOpts[method] = Hoek.applyToDefaults(defaultOpts, methodOpts);
+      if (defaultOpts.hasOwnProperty(method)) {
+
+        const defaultMethodOpts = defaultOpts[method];
+
+        if (methodOpts !== false && defaultMethodOpts !== false) {
+          associationOpts[method] = Hoek.applyToDefaults(defaultMethodOpts, methodOpts);
+        } else if (! associationOpts.hasOwnProperty(method) && defaultMethodOpts === false) {
+          associationOpts[method] = false;
+        }
       }
     }
   }

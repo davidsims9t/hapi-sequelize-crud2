@@ -40,8 +40,6 @@ export default (server, model, association, options) => {
     if (!! methodOpts) {
       methodOpts = typeof methodOpts === 'object' ? methodOpts : {};
 
-      console.log(method, methodOpts);
-
       methods[method](server, model, association, methodOpts);
     }
   }
