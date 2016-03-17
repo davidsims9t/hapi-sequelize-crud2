@@ -1,6 +1,6 @@
 {
   "name": "hapi-sequelize-crud2",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "Hapi plugin that automatically generates a more RESTful API for CRUD, building on hapi-sequelize-crud",
   "main": "build/index.js",
   "config": {
@@ -18,9 +18,9 @@
   "files": [
     "build"
   ],
-  "author": "Mahdi Dibaiee <mdibaiee@aol.com> (http://dibaiee.ir/)",
+  "author": "Alexander Reiff <alexander.reiff@me.com>",
   "contributors": [
-    "Alexander Reiff <alexander.reiff@me.com>"
+    "Mahdi Dibaiee <mdibaiee@aol.com> (http://dibaiee.ir/)"
   ],
   "license": "MIT",
   "devDependencies": {
