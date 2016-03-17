@@ -7,6 +7,7 @@ const FS = require('fs');
 const Hapi = require('hapi');
 const HttpStatus = require('http-status-codes');
 const Lab = require('lab');
+const Mocks = require('./mocks');
 const Path = require('path');
 const QS = require('qs');
 
@@ -287,5 +288,70 @@ describe('hapi-sequelize-crud2 route controller overrides', () => {
         expect(data).to.be.an.object();
         expect(data.count).to.be.null();
       });
+  });
+
+
+  it('should be able to provide a pre-resolved model using a pre-handler', () => {
+    internals.writeController('{ get: { config: { pre: [ { method: function(request, reply) { '
+                                + 'request.server.plugins[\'hapi-sequelize\'].db.sequelize.models.productCategory.findById(2).then(model => reply(model)); }, '
+                                + 'assign: \'model\' } ] } } }');
+
+
+    const ProductCategory = db.models.productCategory;
+    let testCats;
+
+    return Promise.all([
+      ProductCategory.create(Mocks.productCategory()),
+      ProductCategory.create(Mocks.productCategory())
+    ])
+    .then(instances => {
+      testCats = instances;
+
+      return server.register([internals.plugin()]);
+    })
+    .then(() => {
+      return server.inject({ url: '/productCategories/1' });
+    })
+    .then(res => {
+      const data = JSON.parse(res.payload);
+
+      expect(res.statusCode).to.equal(HttpStatus.OK);
+      expect(data).to.be.an.object()
+                  .and.to.deep.equal(testCats[1].toJSON());
+    });
+  });
+
+  it('should be able to provide a model scope via a pre-handler to use in query', () => {
+    internals.writeController('{ index: { config: { pre: [ { method: function(request, reply) { '
+                                + ' reply(\'roots\'); }, '
+                                + 'assign: \'scope\' } ] } } }');
+
+
+    const ProductCategory = db.models.productCategory;
+
+    const cat = Mocks.productCategory();
+    cat.rootCategory = false;
+
+    let testCats;
+
+    return Promise.all([
+      ProductCategory.create(Mocks.productCategory()),
+      ProductCategory.create(cat)
+    ])
+    .then(instances => {
+      testCats = instances;
+
+      return server.register([internals.plugin()]);
+    })
+    .then(() => {
+      return server.inject({ url: '/productCategories' });
+    })
+    .then(res => {
+      const data = JSON.parse(res.payload);
+
+      expect(res.statusCode).to.equal(HttpStatus.OK);
+      expect(data).to.be.an.array()
+                  .and.to.only.deep.include(testCats[0].toJSON());
+    });
   });
 });
