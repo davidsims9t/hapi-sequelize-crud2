@@ -19,8 +19,11 @@ internals.getFiles = (patterns) => {
 
 exports.controllerOptions = function (modelName) {
 
-  const defaultCtrl = arguments.length === 1 // Pass a second argument to avoid infinite recursion
-                      ? this.controllerOptions('_default', true)
+  const server = internals.server;
+  const model = server.plugins['hapi-sequelize'].db.sequelize.models[modelName];
+
+  const defaultCtrl = internals.defaultControllerFactory
+                      ? internals.defaultControllerFactory(server, model)
                       : {};
 
   const modelCtrl = internals.controllers.hasOwnProperty(modelName)
@@ -64,7 +67,9 @@ exports.pluckAssociationOptions = function(options, association, methods) {
 exports.loadControllers = function(server, patterns) {
   const models = server.plugins['hapi-sequelize'].db.sequelize.models;
 
+  internals.server = server;
   internals.controllers = {};
+  delete internals.defaultControllerFactory;
 
   internals.getFiles(patterns).forEach(f => {
     const pathInfo = Path.parse(f);
@@ -74,9 +79,13 @@ exports.loadControllers = function(server, patterns) {
                       ? name
                       : camelCase(name);
 
-    internals.controllers[modelName] = require(fileName)(server, models[modelName]);
+    const ctrlFactory = require(fileName);
 
-    internals.applyControllerDefaults(internals.controllers[modelName]);
+    if (modelName === '_default') {
+      internals.defaultControllerFactory = ctrlFactory;
+    } else {
+      internals.controllers[modelName] = internals.applyControllerDefaults(ctrlFactory(server, models[modelName]));
+    }
   });
 
   return this;
@@ -104,6 +113,7 @@ exports.associationEnabled = function (modelName, associationKey) {
 
 
 internals.applyControllerDefaults = (ctrl) => {
+
   if (ctrl['*'] === false) {
     return ctrl;
   }
