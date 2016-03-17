@@ -65,7 +65,7 @@ And these one-to-one association routes:
 
 | Method | Route | Name | Description |
 |---|---|---|---|
-| GET | `/teams/{id}/captain` | index<sup>3</sup> |
+| GET | `/teams/{id}/captain` | index<sup>3</sup> | Retrieve the related model | 
 | POST | `/teams/{id}/captain` | create | Create a new related model and sets the association |
 | PUT | `/teams/{id}/captain/{aid}` | update | Sets the association with an existing related model |
 | DELETE | `/teams/{id}/captain` | destroy | Unsets the association |
@@ -74,7 +74,7 @@ And these one-to-many association routes:
 
 | Method | Route | Name | Description |
 |---|---|---|---|
-| GET | `/teams/{id}/roles` | index<sup>1 2 3</sup> |
+| GET | `/teams/{id}/roles` | index<sup>1 2 3</sup> | Retrieve the related models |
 | POST | `/teams/{id}/roles` | create | Create a new related model and adds it to the associations |
 | PUT | `/teams/{id}/roles/{aid}` | update | Sets the association with an existing related model |
 | PUT | `/teams/{id}/roles` | updateMany | Sets the association with a many related models, as provided by id[] querystring parameter |
@@ -111,18 +111,15 @@ const Joi = require('joi');
 modules.export = function(server, Team) {
   const plural = Team.options.name.plural;
   
-  const readConfig = {
-    cache: {
-      expiresIn: 30 * 1000,
-      private: 'private'
-    }
-  };
-  
   return {
-    index: readConfig,
-    get: readConfig,
+    '*': {
+      cache: {
+        expiresIn: 30 * 1000,
+        private: 'private'
+      }
+    },
     
-    scope: Hoek.applyToDefaults(readConfig, {
+    scope: {
       config: {
         validation: {
           params: {
@@ -130,9 +127,9 @@ modules.export = function(server, Team) {
           }
         }
       }
-    }),
+    },
     
-    count: Hoek.applyToDefaults(readConfig, {
+    count: {
       path: `${plural}/total`,
       handler: function(request, reply) {
         ...
@@ -140,7 +137,7 @@ modules.export = function(server, Team) {
         
         reply({total: total}); 
       }
-    }),
+    },
         
     create: false,
     update: false,
@@ -162,3 +159,12 @@ modules.export = function(server, Team) {
 Include a default configuration to apply to all routes in a controller by setting the `*` key. 
 Apply only to all association routes by setting `associations.*`. To set a default controller,
 include a `_default.js` file in your controllers file path.
+
+## Provide Already Retrieved Model
+Have you already queried for and retrieved the model instance (or parent instance for association
+routes) earlier in your pre-handler cycle? You can provide this to the plugin by assigning the
+`request.pre.model` property to your request object and it will not execute the find query.
+
+## Dynamic Scope Limiting
+Need to assign a scope based on ACL or other pre-handler results? Assign the `request.pre.scope` key
+to your request object and it will apply the supplied pre-defined model scopes to the find queries.
