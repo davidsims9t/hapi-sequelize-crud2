@@ -4,7 +4,7 @@ export const validation = {
 
   id: Joi.number().integer().min(1).required(),
   offset: Joi.number().integer().min(0).default(0, 'results offset'),
-  limit: Joi.number().integer().min(1).default(20, 'number of results per set'),
+  limit: Joi.number().integer().min(1).max(100).default(20, 'number of results per set'),
 
   include(model) {
     return Joi.string();

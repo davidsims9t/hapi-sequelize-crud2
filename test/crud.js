@@ -120,6 +120,15 @@ describe('hapi-sequelize-crud2 CRUD REST interface', () => {
       });
   });
 
+  it('should not allow limits of more than 100', () => {
+    const limit = 1000;
+
+    return server.inject({ url: `${baseUrl}?limit=${limit}` })
+      .then(res => {
+        expect(res.statusCode).to.equal(HttpStatus.BAD_REQUEST);
+      });
+  });
+
   it('should retrieve a count of models', () => {
     return server.inject({ url: `${baseUrl}/count` })
       .then(res => {
