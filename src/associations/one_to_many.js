@@ -23,9 +23,15 @@ export default (server, model, association, options) => {
   prefix = options.prefix;
   scopePrefix = options.scopePrefix;
 
- const controllerOptions = Hoek.applyToDefaults(
+  const asscOptions = ControllerManager.pluckAssociationOptions(
+                        options.controllerOptions,
+                        association._plural,
+                        Object.keys(defaultControllerOptions)
+                      );
+
+  const controllerOptions = Hoek.applyToDefaults(
                               defaultControllerOptions,
-                              ControllerManager.pluckAssociationOptions(options.controllerOptions, association._plural)
+                              asscOptions
                             );
 
   for (const method in methods) {
@@ -33,6 +39,8 @@ export default (server, model, association, options) => {
 
     if (!! methodOpts) {
       methodOpts = typeof methodOpts === 'object' ? methodOpts : {};
+
+      console.log(method, methodOpts);
 
       methods[method](server, model, association, methodOpts);
     }

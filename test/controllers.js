@@ -7,6 +7,7 @@ const FS = require('fs');
 const Hapi = require('hapi');
 const HttpStatus = require('http-status-codes');
 const Lab = require('lab');
+const Path = require('path');
 const QS = require('qs');
 
 const routesToStrings = require('./helpers').routesToStrings;
@@ -23,6 +24,7 @@ const it = lab.it;
 const internals = {
   controllerFile: 'test/server/controllers/productCategory.{i}.js',
   currentControllerFile: null,
+  defaultFile: 'test/server/controllers/_default.js',
   iteration: 0
 };
 
@@ -45,18 +47,23 @@ internals.removeController = function() {
   ++internals.iteration;
 };
 
-internals.writeController = function(def, snakeCase) {
+internals.writeController = function(def, snakeCase, writeDefault) {
+  writeDefault = !!writeDefault;
+
   const filename = (snakeCase ? snakeCase(this.controllerFile) : this.controllerFile).replace('{i}', internals.iteration);
 
   if (typeof def === 'object') {
     def = JSON.stringify(def);
   }
 
-  const file = `module.exports = function (server, ProductCategory) { return ${def}; };`;
+  const argName = writeDefault ? 'Model' : 'ProductCategory';
+  const file = `module.exports = function (server, ${argName}) { return ${def}; };`;
 
-  FS.writeFileSync(filename, file);
+  const writeTarget = writeDefault ? Path.resolve(this.defaultFile) : filename;
 
-  internals.currentControllerFile = filename;
+  FS.writeFileSync(writeTarget, file);
+
+  internals.currentControllerFile = writeTarget;
 }
 
 describe('hapi-sequelize-crud2 route controller overrides', () => {
@@ -89,7 +96,7 @@ describe('hapi-sequelize-crud2 route controller overrides', () => {
       });
   });
 
-  after(() => {
+  afterEach(() => {
     internals.removeController();
 
     return Promise.resolve();
@@ -194,13 +201,11 @@ describe('hapi-sequelize-crud2 route controller overrides', () => {
       });
   });
 
-  it('should be able to deactivate individual routes for an individual model association', () => {
+  it('should be able to deactivate an individual route for an individual model association', () => {
     internals.writeController({
       associations: {
         tags: {
-          update: false,
           destroy: false,
-          updateMany: false,
           destroyMany: false
         }
       }
@@ -218,18 +223,52 @@ describe('hapi-sequelize-crud2 route controller overrides', () => {
           `/productCategories/{id}/products|delete`,
           `/productCategories/{id}/products/{aid}|delete`,
           `/productCategories/{id}/products/count|get`,
-
           `/productCategories/{id}/tags|get`,
           `/productCategories/{id}/tags|post`,
+          `/productCategories/{id}/tags|put`,
+          `/productCategories/{id}/tags/{aid}|put`,
           `/productCategories/{id}/tags/count|get`
         ]);
 
         expect(routes).to.not.include([
-          `/productCategories/{id}/tags|put`,
-          `/productCategories/{id}/tags/{aid}|put`,
           `/productCategories/{id}/tags|delete`,
           `/productCategories/{id}/tags/{aid}|delete`
         ]);
+      });
+  });
+
+  it('should be able to deactivate an individual route for all model associations', () => {
+    internals.writeController({
+      associations: {
+        '*': {
+          destroy: false
+        }
+      }
+    }, false, true);
+
+    return server.register([internals.plugin()])
+      .then(() => {
+        const routes = routesToStrings(server);
+
+        routes.forEach(r => {
+          expect(r).to.not.endWith('{aid}|delete');
+        })
+      });
+  });
+
+  it('should be able to override individual controller logic for an individual model association', () => {
+    internals.writeController('{ associations: { tags: { count: { handler: function(server, reply) { reply({ count: null }); } } } } }');
+
+      return server.register([internals.plugin()])
+      .then(() => {
+        return server.inject({ url: '/productCategories/1/tags/count' });
+      })
+      .then(res => {
+        const data = JSON.parse(res.payload);
+
+        expect(res.statusCode).to.equal(HttpStatus.OK);
+        expect(data).to.be.an.object();
+        expect(data.count).to.be.null();
       });
   });
 

@@ -19,9 +19,15 @@ const methods = {};
 export default (server, model, association, options) => {
   prefix = options.prefix;
 
+  const asscOptions = ControllerManager.pluckAssociationOptions(
+                        options.controllerOptions,
+                        association._plural,
+                        Object.keys(defaultControllerOptions)
+                      );
+
   const controllerOptions = Hoek.applyToDefaults(
                               defaultControllerOptions,
-                              ControllerManager.pluckAssociationOptions(options.controllerOptions, association._singular)
+                              asscOptions
                             );
 
   for (const method in methods) {
