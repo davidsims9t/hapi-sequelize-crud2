@@ -1,4 +1,5 @@
 import Boom from 'boom';
+import ControllerManager from '../controller_manager';
 import Hoek from 'hoek';
 import Joi from 'joi';
 import error from '../error';
@@ -18,7 +19,10 @@ const methods = {};
 export default (server, model, association, options) => {
   prefix = options.prefix;
 
-  const controllerOptions = Hoek.applyToDefaults(defaultControllerOptions, options.controllerOptions);
+  const controllerOptions = Hoek.applyToDefaults(
+                              defaultControllerOptions,
+                              ControllerManager.pluckAssociationOptions(options.controllerOptions, association._singular)
+                            );
 
   for (const method in methods) {
     let methodOpts = controllerOptions[method];

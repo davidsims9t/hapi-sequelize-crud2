@@ -30,6 +30,20 @@ exports.controllerOptions = function (modelName) {
   return Hoek.applyToDefaults(defaultCtrl, modelCtrl);
 }
 
+exports.pluckAssociationOptions = function(options, association) {
+  if (!options.associations) {
+    return {};
+  }
+
+  const defaultOpts = options.associations['*'] || {};
+
+  const associationOpts = options.associations && options.associations[association]
+                              ? options.associations[association]
+                              : {}
+
+  return Hoek.applyToDefaults(defaultOpts, associationOpts);
+};
+
 exports.loadControllers = function(server, patterns) {
   const models = server.plugins['hapi-sequelize'].db.sequelize.models;
 
