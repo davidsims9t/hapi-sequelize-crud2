@@ -100,6 +100,10 @@ controller should export a function that accepts two arguments, a Hapi server in
 object, and returns an object mapping route names to Hapi route configuration object partials or 
 `false` to disable a route.
 
+Include a default configuration to apply to all routes in a controller by setting the `*` key. 
+Apply only to all association routes by setting `associations.*`. To set a default controller,
+include a `_default.js` file in your controllers file path.
+
 For example, a read-only endpoint with limited scope access may look like:
 
 ```javascript
@@ -156,14 +160,10 @@ modules.export = function(server, Team) {
 });
 ```
 
-Include a default configuration to apply to all routes in a controller by setting the `*` key. 
-Apply only to all association routes by setting `associations.*`. To set a default controller,
-include a `_default.js` file in your controllers file path.
-
 ## Provide Already Retrieved Model
 Have you already queried for and retrieved the model instance (or parent instance for association
 routes) earlier in your pre-handler cycle? You can provide this to the plugin by assigning the
-`request.pre.model` property to your request object and it will not execute the find query.
+`request.pre.model` key to your request object and it will not execute the find query.
 
 ## Dynamic Scope Limiting
 Need to assign a scope based on ACL or other pre-handler results? Assign the `request.pre.scope` key
