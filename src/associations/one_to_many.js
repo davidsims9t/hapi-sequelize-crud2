@@ -7,16 +7,6 @@ import { getModel, queryParams, validation } from '../helpers';
 
 let prefix, scopePrefix;
 
-const defaultControllerOptions = {
-  index: true,
-  create: true,
-  update: true,
-  updateMany: true,
-  destroy: true,
-  destroyMany: true,
-  count: true
-};
-
 const methods = {};
 
 export default (server, model, association, options) => {
@@ -25,17 +15,11 @@ export default (server, model, association, options) => {
 
   const asscOptions = ControllerManager.pluckAssociationOptions(
                         options.controllerOptions,
-                        association._plural,
-                        Object.keys(defaultControllerOptions)
+                        association._plural
                       );
 
-  const controllerOptions = Hoek.applyToDefaults(
-                              defaultControllerOptions,
-                              asscOptions
-                            );
-
   for (const method in methods) {
-    let methodOpts = controllerOptions[method];
+    let methodOpts = asscOptions[method];
 
     if (!! methodOpts) {
       methodOpts = typeof methodOpts === 'object' ? methodOpts : {};

@@ -18,6 +18,16 @@ internals.defaultControllerOptions = {
   update: true
 };
 
+internals.defaultAssociationOptions = {
+  index: true,
+  create: true,
+  update: true,
+  updateMany: true,
+  destroy: true,
+  destroyMany: true,
+  count: true
+};
+
 internals.getFiles = (patterns) => {
   if (! Array.isArray(patterns)) {
     patterns = [patterns];
@@ -51,9 +61,9 @@ exports.controllerOptions = function (modelName) {
   return ctrl;
 }
 
-exports.pluckAssociationOptions = function(options, association, methods) {
+exports.pluckAssociationOptions = function(options, association) {
   if (!options.associations) {
-    return {};
+    return internals.defaultAssociationOptions;
   }
 
   const defaultOpts = options.associations['*'] || {};
@@ -63,6 +73,8 @@ exports.pluckAssociationOptions = function(options, association, methods) {
                               : {};
 
   if (Object.keys(defaultOpts).length > 0) {
+    const methods = Object.keys(internals.defaultAssociationOptions);
+
     for (const method of methods) {
       const methodOpts = associationOpts.hasOwnProperty(method) ? associationOpts[method] : {};
 
@@ -79,7 +91,7 @@ exports.pluckAssociationOptions = function(options, association, methods) {
     }
   }
 
-  return associationOpts;
+  return Hoek.applyToDefaults(internals.defaultAssociationOptions, associationOpts);
 };
 
 exports.loadControllers = function(server, patterns) {
