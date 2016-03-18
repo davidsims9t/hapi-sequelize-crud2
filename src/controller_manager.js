@@ -4,7 +4,18 @@ import Path from 'path';
 import camelCase from 'camel-case';
 
 const internals = {
-  controllers: {}
+  controllers: {},
+  resolvedControllers: {},
+};
+
+internals.defaultControllerOptions = {
+  index: true,
+  get: true,
+  count: true,
+  scope: true,
+  create: true,
+  destroy: true,
+  update: true
 };
 
 internals.getFiles = (patterns) => {
@@ -19,6 +30,10 @@ internals.getFiles = (patterns) => {
 
 exports.controllerOptions = function (modelName) {
 
+  if (internals.resolvedControllers[modelName]) {
+    return internals.resolvedControllers[modelName];
+  }
+
   const server = internals.server;
   const model = server.plugins['hapi-sequelize'].db.sequelize.models[modelName];
 
@@ -30,7 +45,10 @@ exports.controllerOptions = function (modelName) {
                       ? internals.controllers[modelName]
                       : {};
 
-  return Hoek.applyToDefaults(defaultCtrl, modelCtrl);
+  const ctrl = internals.resolvedControllers[modelName]
+             = internals.applyControllerDefaults(Hoek.applyToDefaults(defaultCtrl, modelCtrl));
+
+  return ctrl;
 }
 
 exports.pluckAssociationOptions = function(options, association, methods) {
@@ -69,6 +87,7 @@ exports.loadControllers = function(server, patterns) {
 
   internals.server = server;
   internals.controllers = {};
+  internals.resolvedControllers = {};
   delete internals.defaultControllerFactory;
 
   internals.getFiles(patterns).forEach(f => {
@@ -84,7 +103,7 @@ exports.loadControllers = function(server, patterns) {
     if (modelName === '_default') {
       internals.defaultControllerFactory = ctrlFactory;
     } else {
-      internals.controllers[modelName] = internals.applyControllerDefaults(ctrlFactory(server, models[modelName]));
+      internals.controllers[modelName] = ctrlFactory(server, models[modelName]);
     }
   });
 
@@ -120,24 +139,28 @@ internals.applyControllerDefaults = (ctrl) => {
 
   const defaults = ctrl['*'] || {};
 
-  if (Object.keys(defaults) > 0) {
+  if (Object.keys(defaults).length > 0) {
 
     delete ctrl['*'];
 
-    for (const method in ctrl) {
+    const methods = Object.keys(internals.defaultControllerOptions);
+
+    for (const method of methods) {
       if (method === 'associations' || ctrl[method] === false) {
         continue;
       }
 
-      ctrl[method] = Hoek.applyToDefaults(defaults, ctrl[method]);
+      ctrl[method] = Hoek.applyToDefaults(defaults, ctrl[method] || {});
     }
 
-    const ascDefaults = ctrl.associations.hasOwnProperty('*') ? ctrl.associations['*'] : {};
+    const ascDefaults = ctrl.associations && ctrl.associations.hasOwnProperty('*') ? ctrl.associations['*'] : {};
 
     if (ascDefaults !== false) {
-      ctrl.associations['*'] = Hoke.applyToDefaults(defaults, ascDefaults);
+      ctrl.associations = ctrl.associations || {};
+
+      ctrl.associations['*'] = Hoek.applyToDefaults(defaults, ascDefaults);
     }
   }
 
-  return ctrl;
+  return Hoek.applyToDefaults(internals.defaultControllerOptions, ctrl);
 };

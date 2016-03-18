@@ -6,22 +6,12 @@ import { getModel, queryParams, validation } from './helpers';
 
 let prefix, scopePrefix, controllerOptions;
 
-const defaultControllerOptions = {
-  index: true,
-  get: true,
-  count: true,
-  scope: true,
-  create: true,
-  destroy: true,
-  update: true
-}
-
 const methods = {};
 
 export default (server, model, options) => {
   prefix = options.prefix,
   scopePrefix = options.scopePrefix,
-  controllerOptions = Hoek.applyToDefaults(defaultControllerOptions, options.controllerOptions || {});
+  controllerOptions = options.controllerOptions;
 
   for (const method in methods) {
     let methodOpts = controllerOptions[method];
