@@ -1,6 +1,6 @@
 {
   "name": "hapi-sequelize-crud2",
-  "version": "2.7.3",
+  "version": "2.7.4",
   "description": "Hapi plugin that automatically generates a RESTful API for CRUD, building on hapi-sequelize-crud",
   "main": "build/index.js",
   "config": {
