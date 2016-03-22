@@ -7,7 +7,7 @@ const Hapi = require('hapi');
 const Hoek = require('hoek');
 const HttpStatus = require('http-status-codes');
 const Lab = require('lab');
-const Mocks = require('./mocks');
+const Mocks = require('./helpers/mocks');
 const QS = require('qs');
 
 const snakeCase = require('snake-case');

@@ -5,13 +5,14 @@ require('babel-polyfill');
 const Code = require('code');
 const FS = require('fs');
 const Hapi = require('hapi');
+const Helpers = require('./helpers/server');
 const HttpStatus = require('http-status-codes');
 const Lab = require('lab');
-const Mocks = require('./mocks');
+const Mocks = require('./helpers/mocks');
 const Path = require('path');
 const QS = require('qs');
 
-const routesToStrings = require('./helpers').routesToStrings;
+const routesToStrings = Helpers.routesToStrings;
 const snakeCase = require('snake-case');
 const lab = exports.lab = Lab.script();
 const expect = Code.expect;

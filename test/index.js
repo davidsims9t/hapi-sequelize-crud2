@@ -6,8 +6,7 @@ const Code = require('code');
 const Hapi = require('hapi');
 const Lab = require('lab');
 
-const mocks = require('./mocks');
-const routesToStrings = require('./helpers').routesToStrings;
+const routesToStrings = require('./helpers/server').routesToStrings;
 const snakeCase = require('snake-case');
 const lab = exports.lab = Lab.script();
 const expect = Code.expect;
