@@ -13,7 +13,7 @@ export const validation = {
   filter(model) {
     return Joi.object();
   }
-}
+};
 
 export const queryParams = (server, request) => {
 
@@ -26,7 +26,7 @@ export const queryParams = (server, request) => {
     limit: q.limit,
     include: q.include ? [models[q.include]] : []
   };
-}
+};
 
 export const getModel = (request, model, param) => {
 
@@ -35,5 +35,25 @@ export const getModel = (request, model, param) => {
 
   return request.pre.model
           ? Promise.resolve(request.pre.model)
-          : model.scope(request.pre.scope).findById(id);
-}
+          : model.scope(prepareScopes(request.pre.scope)).findById(id);
+};
+
+export const prepareScopes = (scopes) => {
+
+  if (!Array.isArray(scopes)) {
+    scopes = [scopes];
+  }
+
+  const flattenedScopes = scopes.reduce((flat, item) => {
+
+    if (Array.isArray(item)) {
+      item.forEach(i => flat.push(i));
+    } else {
+      flat.push(item);
+    }
+
+    return flat;
+  }, []);
+
+  return flattenedScopes.filter(s => !!s);
+};

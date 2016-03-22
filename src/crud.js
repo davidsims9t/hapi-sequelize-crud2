@@ -2,7 +2,7 @@ import Boom from 'boom';
 import Hoek from 'hoek';
 import Joi from 'joi';
 import error from './error';
-import { getModel, queryParams, validation } from './helpers';
+import { getModel, prepareScopes, queryParams, validation } from './helpers';
 
 let prefix, scopePrefix, controllerOptions;
 
@@ -114,8 +114,9 @@ export const scope = methods.scope = (server, model, options) => {
         }
       }
 
-      const list = await model.scope(request.pre.scope)
-                              .scope(request.params.scope)
+      const preparedScopes = prepareScopes([request.pre.scope, request.params.scope]);
+
+      const list = await model.scope(preparedScopes)
                               .findAll({ include, where, offset, limit });
 
       reply(list);
