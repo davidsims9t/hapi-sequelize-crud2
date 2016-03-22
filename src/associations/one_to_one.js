@@ -14,7 +14,7 @@ export default (server, model, association, options) => {
 
   const asscOptions = ControllerManager.pluckAssociationOptions(
                         options.controllerOptions,
-                        association._plural
+                        association._singular
                       );
 
   for (const method in methods) {
