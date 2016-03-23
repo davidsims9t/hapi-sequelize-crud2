@@ -96,7 +96,11 @@ export const get = methods.get = (server, model, options) => {
 }
 
 export const scope = methods.scope = (server, model, options) => {
-  let scopes = Object.keys(model.options.scopes);
+  const scopes = Object.keys(model.options.scopes);
+
+  if (!scopes.length) {
+    return;
+  }
 
   const route = Hoek.applyToDefaults({
     method: 'GET',
