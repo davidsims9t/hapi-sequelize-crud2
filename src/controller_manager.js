@@ -106,9 +106,9 @@ exports.loadControllers = function(server, patterns) {
     const pathInfo = Path.parse(f);
     const fileName = Path.resolve('.', pathInfo.dir, pathInfo.base);
     const name = pathInfo.name.replace(/\..+$/, ''); // enables adding suffix for testing, e.g. modelName.timestamp.js
-    const modelName = name.indexOf('_') < 1 // -1 or 0 match
-                      ? name
-                      : camelCase(name);
+
+    const snakeCase = server.realm.pluginOptions.snakeCase;
+    const modelName = snakeCase ? name : camelCase(name);
 
     const ctrlFactory = require(fileName);
 

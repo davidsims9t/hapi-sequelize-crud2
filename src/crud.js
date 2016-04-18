@@ -25,6 +25,8 @@ export default (server, model, options) => {
 }
 
 export const index = methods.index = (server, model, options) => {
+  const auth = options.config && options.config.auth ? options.config.auth : false;
+
   const route = Hoek.applyToDefaults({
     method: 'GET',
     path: `${prefix}/${model._plural}`,
@@ -48,6 +50,7 @@ export const index = methods.index = (server, model, options) => {
       reply(list);
     },
     config: {
+      auth,
       validate: {
         query: {
           filter: validation.filter(model),
@@ -63,6 +66,8 @@ export const index = methods.index = (server, model, options) => {
 }
 
 export const get = methods.get = (server, model, options) => {
+  const auth = options.config && options.config.auth ? options.config.auth : false;
+
   const route = Hoek.applyToDefaults({
     method: 'GET',
     path: `${prefix}/${model._plural}/{id}`,
@@ -81,6 +86,7 @@ export const get = methods.get = (server, model, options) => {
       reply(instance);
     },
     config: {
+      auth,
       validate: {
         params: {
           id: Joi.number().integer()
@@ -97,6 +103,7 @@ export const get = methods.get = (server, model, options) => {
 
 export const scope = methods.scope = (server, model, options) => {
   let scopes = Object.keys(model.options.scopes);
+  const auth = options.config && options.config.auth ? options.config.auth : false;
 
   const route = Hoek.applyToDefaults({
     method: 'GET',
@@ -122,6 +129,7 @@ export const scope = methods.scope = (server, model, options) => {
       reply(list);
     },
     config: {
+      auth,
       validate: {
         params: {
           scope: Joi.string().valid(...scopes)
@@ -140,6 +148,8 @@ export const scope = methods.scope = (server, model, options) => {
 }
 
 export const create = methods.create = (server, model, options) => {
+  const auth = options.config && options.config.auth ? options.config.auth : false;
+
   const route = Hoek.applyToDefaults({
     method: 'POST',
     path: `${prefix}/${model._plural}`,
@@ -149,6 +159,9 @@ export const create = methods.create = (server, model, options) => {
       const instance = await model.create(request.payload);
 
       reply(instance);
+    },
+    config: {
+      auth
     }
   }, options);
 
@@ -156,6 +169,8 @@ export const create = methods.create = (server, model, options) => {
 }
 
 export const update = methods.update = (server, model, options) => {
+  const auth = options.config && options.config.auth ? options.config.auth : false;
+
   const route = Hoek.applyToDefaults({
     method: 'PUT',
     path: `${prefix}/${model._plural}/{id}`,
@@ -173,6 +188,7 @@ export const update = methods.update = (server, model, options) => {
       reply(result);
     },
     config: {
+      auth,
       validate: {
         params: {
           id: validation.id
@@ -185,6 +201,8 @@ export const update = methods.update = (server, model, options) => {
 }
 
 export const destroy = methods.destroy = (server, model, options) => {
+  const auth = options.config && options.config.auth ? options.config.auth : false;
+
   const route = Hoek.applyToDefaults({
     method: 'DELETE',
     path: `${prefix}/${model._plural}/{id}`,
@@ -202,6 +220,7 @@ export const destroy = methods.destroy = (server, model, options) => {
       reply(result);
     },
     config: {
+      auth,
       validate: {
         params: {
           id: validation.id
@@ -214,6 +233,8 @@ export const destroy = methods.destroy = (server, model, options) => {
 }
 
 export const count = methods.count = (server, model, options) => {
+  const auth = options.config && options.config.auth ? options.config.auth : false;
+
   const route = Hoek.applyToDefaults({
     method: 'GET',
     path: `${prefix}/${model._plural}/count`,
@@ -227,6 +248,7 @@ export const count = methods.count = (server, model, options) => {
       reply({ count });
     },
     config: {
+      auth,
       validate: {
         query: {
           filter: validation.filter(model)

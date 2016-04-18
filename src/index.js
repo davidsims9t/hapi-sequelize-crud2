@@ -22,6 +22,7 @@ internals.optionDefaults = {
   scopePrefix: 's',
   snakeCase: false,
   private: [],
+  auth: false,
   controllers: 'controllers/**/*.js'
 };
 
